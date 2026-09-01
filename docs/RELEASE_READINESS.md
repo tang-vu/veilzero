@@ -26,3 +26,11 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - A new local detached checkout passed ESLint, strict TypeScript and all 29 tests using the unchanged lockfile's previously verified dependency tree. Scarb format/build and both pinned Sierra/CASM artifact identities passed from that checkout. There is no contract-tree change from the fully Foundry-tested `7da3acb` commit.
 - Three local attempts to materialize a new pnpm virtual store were terminated by the command host during NTFS package linking with exit `-1`, empty stderr and no pnpm error. Hard-link and copy modes were both tried. An external `node_modules` junction was used only to test clean source; Turbopack correctly rejected that out-of-root junction, so it is not counted as a local production-build pass.
 - Consequently, exact-head fresh installation and production build are proven by public Linux CI; the last fully local fresh install/build remains `7da3acb`, whose lockfile is byte-identical to `e17c60f`. This limitation is recorded rather than hidden.
+
+## Deployment-handoff verification — 2026-09-01
+
+- The release artifact remains byte-for-byte/class-hash identical to the pinned candidate.
+- A read-only mainnet run at block `14206318` verified the compatible pool surface, current 6 STRK pool fee, canonical UDC presence and that the VeilZero class was not declared.
+- Three new unit tests verify deterministic pool-bound deployment, deployer-bound unique addressing and invalid-address rejection; the full Vitest suite is now 32 passed.
+- The test run used dummy public deployer `0x123`; its predicted address is explicitly not deployment evidence.
+- ESLint, strict TypeScript, production build, Playwright, manifest validation, dependency audit, artifact verification, diff whitespace checks and tracked-file secret scan passed. Cairo sources and dependencies are unchanged from the 34/34 contract-tested artifact; native Windows still has no `scarb` executable, so the existing verified artifact was rehashed rather than rebuilt in this change.

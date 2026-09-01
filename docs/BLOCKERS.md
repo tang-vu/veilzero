@@ -26,6 +26,17 @@ pnpm verify:strk20
 
 Immediately before any deployment/signing gate, set a current process-scoped RPC and rerun `pnpm probe:pool`; compare its address, class hash, ABI surface and fee with `docs/evidence/live-pool-probe.md`.
 
+With the dedicated wallet's public address only, generate the exact read-only declaration/deployment plan:
+
+```powershell
+$env:STARKNET_RPC_URL = '<verified-mainnet-rpc>'
+$env:STRK20_POOL_ADDRESS = '<verified-live-pool>'
+$env:VEILZERO_DEPLOYER_ADDRESS = '<dedicated-wallet-public-address>'
+pnpm prepare:deployment
+```
+
+Do not treat the predicted address as deployed evidence. Fee estimation and both signatures remain browser-wallet human gates.
+
 After human-signed qualifying transactions have final accepted receipts, place the three candidate hashes and deployed address into the local `strk20.json`, then set the evidence variables and reconcile before committing that file:
 
 ```powershell

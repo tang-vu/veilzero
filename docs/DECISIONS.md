@@ -59,3 +59,7 @@ The release candidate records SHA-256 digests plus normalized Sierra and CASM cl
 ## 2026-09-01 — Use the wallet-managed proving route and live legacy pool surface
 
 Current official Wallet API guidance assigns viewing keys, note discovery and proof generation to the connected Ready/Xverse-compatible wallet, so VeilZero does not configure an application prover or indexer. AVNU SDK 4.2.0 supplies the documented mainnet pool constant. A block-pinned read-only ABI probe confirms that pool remains on the global-screening surface compatible with VeilZero's single `Span<OpenNoteDeposit>` return. Because the pool is upgradeable, compatibility and fees must be re-probed before every signing gate.
+
+## 2026-09-01 — Derive deployment through the canonical unique UDC path
+
+The release deployment uses Starknet.js's canonical UDC with `unique: true`, constructor calldata containing the freshly verified pool, and a deterministic Poseidon salt domain-separated by `VEILZERO_DEPLOY_V1`, class hash and pool. The expected address is additionally bound to the dedicated wallet's public deployer address. A read-only generator verifies artifact identity, pool compatibility, UDC presence and declaration state; its output is planning data and never deployment evidence.

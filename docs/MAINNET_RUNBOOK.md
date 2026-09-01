@@ -13,3 +13,5 @@ Deployment gate: `prepareDestinationBoundClaim` first calls `wallet_strk20Prepar
 Ambiguous receipt means stop. Never retry until transaction lookup and case/nullifier state prove the first attempt absent or failed.
 
 The release-candidate build identity is recorded in `docs/evidence/contract-artifact.md` and checked with `pnpm verify:artifact`. A matching class hash proves only artifact identity. It does not prove declaration, deployment, pool compatibility, or transaction execution. Before any declaration, rebuild from the exact release commit and rerun the verifier; any source or dependency change requires recording new hashes.
+
+After obtaining only the dedicated browser wallet's public address, generate a block-pinned declaration/deployment bundle with `pnpm prepare:deployment`. The required process-scoped inputs are `STARKNET_RPC_URL`, `STRK20_POOL_ADDRESS`, and `VEILZERO_DEPLOYER_ADDRESS`. Review the declared/not-declared result, expected unique UDC address and constructor pool binding. This command is read-only and deliberately does not estimate fees; obtain fresh wallet estimates before presenting either human signing gate.

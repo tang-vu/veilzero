@@ -25,6 +25,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
 | Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Estimation-only preview, marker extraction, case signature, proof completeness and note-drift abort |
 | Reproducible contract artifact identity | Verified locally, not declared | Pinned Sierra/CASM SHA-256 and class hashes in `docs/evidence/contract-artifact.md` |
+| Deterministic deployment handoff | Read-only mainnet verified | Artifact/pool/UDC/declaration checks; unique address derived from a public deployer address |
 | Live pool diagnostics | Read-only mainnet verified | Address, class, ABI surface, version and 6 STRK observed fee pinned to block `14205166` |
 | Wallet API submission | Deferred pending live wallet validation | Diagnostic is explicitly read-only; no fake success path |
 | Mainnet evidence | Not started | `strk20.json` is honestly empty |
@@ -99,6 +100,7 @@ pnpm test
 pnpm build
 pnpm test:e2e
 pnpm scan:secrets
+pnpm prepare:deployment # requires current RPC, pool and public deployer address
 cd contracts && scarb build
 cd .. && pnpm verify:artifact
 # Linux/WSL with Starknet Foundry 0.63.0:
