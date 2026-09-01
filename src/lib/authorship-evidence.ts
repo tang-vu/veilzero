@@ -12,9 +12,9 @@ const evidenceSchema = z.object({
   caseSigningVerificationKey: hexFelt,
   challenge: z.string().min(1).max(256),
   messageHash: hexFelt,
-  signature: z.object({ r: hexFelt, s: hexFelt }),
+  signature: z.object({ r: hexFelt, s: hexFelt }).strict(),
   createdAt: z.string().datetime(),
-});
+}).strict();
 
 export type AuthorshipEvidence = z.infer<typeof evidenceSchema>;
 

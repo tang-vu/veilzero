@@ -83,3 +83,7 @@ Shield, transfer, self-transfer and unshield diagnostics parse plain decimal str
 ## 2026-09-01 — Bind the vendor program in a secret-free public manifest
 
 The browser emits a canonical manifest whose commitments cover the X25519 public key, policy, SLAs, token and strictly ordered reward tiers. Researcher packages derive the identical encryption-key commitment. The private vendor key remains a separate sensitive download, and the manifest is not treated as deployed evidence until a matching receipt exists.
+
+## 2026-09-01 — Verify selective evidence with a strict local-only importer
+
+The judge-facing verifier caps files at 32 KiB, rejects unknown top-level or signature fields, recomputes the message binding and verifies the Stark key/signature locally. It renders only a validity verdict and never echoes or persists imported JSON. This artifact proves scoped authorship but never substitutes for mainnet evidence.

@@ -21,6 +21,7 @@ Review opened 2026-09-01; unresolved findings are retained.
 | Ambiguous transaction retry | High | Fixed locally / live validation pending | A strict secret-free pending journal survives reload; timeouts, malformed/mismatched receipts and incomplete status remain ambiguous and block a second hash |
 | Plaintext logging/storage | High | No instance found | No logger/localStorage/backend; field cleared after encrypt |
 | Secret recovery package used as vendor transport | Critical operational | Fixed | Separate public envelope excludes case secret, local key, signing key and claim secret; schema, length and ciphertext commitment are checked before decryption; files over 64 KiB are rejected |
+| Selective-proof parser accepts secret-bearing extensions | High operational | Fixed + browser tested | Strict nested schema rejects unknown fields; 32 KiB import cap; UI displays only a verdict and never imported JSON |
 | Ambiguous commitment serialization / envelope field substitution | High integrity | Fixed | SHA-256 commitment parts are length-framed and bind ciphertext, AEAD parameters, program binding, case/report commitments and case public key; substitution tests fail closed |
 | XSS/URL injection | Medium | No dynamic HTML | React text escaping; fixed external URLs |
 | Dependency vulnerability | High | Fixed | Next 16.0.8 rejected; pinned 16.3.4; `pnpm audit` reports no known vulnerabilities |

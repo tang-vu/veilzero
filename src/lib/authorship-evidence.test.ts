@@ -17,5 +17,6 @@ describe("selective authorship evidence", () => {
     const proof = createAuthorshipEvidence(pkg, "original challenge");
     expect(verifyAuthorshipEvidence({ ...proof, reportCommitment: "0x123" })).toBe(false);
     expect(verifyAuthorshipEvidence({ ...proof, challenge: "different challenge" })).toBe(false);
+    expect(verifyAuthorshipEvidence({ ...proof, claimSecret: pkg.claimSecret })).toBe(false);
   });
 });

@@ -13,7 +13,7 @@ import {
   type PublicCaseEnvelope,
   type VendorKeyPackage,
 } from "@/lib/case-crypto";
-import { createAuthorshipEvidence } from "@/lib/authorship-evidence";
+import { createAuthorshipEvidence, verifyAuthorshipEvidence } from "@/lib/authorship-evidence";
 import { privacyBoundary } from "@/lib/privacy-boundary";
 import { createPublicProgramManifest, type PublicProgramManifest } from "@/lib/program-manifest";
 import { parseTokenAmount } from "@/lib/strk20-diagnostic-actions";
@@ -41,6 +41,7 @@ export default function Home() {
   const [vendorPlaintext, setVendorPlaintext] = useState("");
   const [importedEnvelope, setImportedEnvelope] = useState<PublicCaseEnvelope | null>(null);
   const [vendorBusy, setVendorBusy] = useState(false);
+  const [evidenceStatus, setEvidenceStatus] = useState("No authorship proof imported.");
   const ready = useSyncExternalStore(() => () => undefined, () => true, () => false);
   const payloadLabel = useMemo(() => casePackage ? `${casePackage.ciphertext.length} encoded characters · ${casePackage.sizeClass}` : "Nothing has left this browser", [casePackage]);
 
@@ -162,6 +163,16 @@ export default function Home() {
     } catch { setImportedEnvelope(null); setError("Encrypted case import failed validation."); }
   }
 
+  async function importAuthorshipEvidence(file: File | undefined) {
+    if (!file) return;
+    setEvidenceStatus("Checking proofâ€¦");
+    try {
+      if (file.size > 32 * 1024) throw new Error("oversized");
+      const valid = verifyAuthorshipEvidence(JSON.parse(await file.text()));
+      setEvidenceStatus(valid ? "Valid VeilZero authorship proof. The case key signed this report commitment and challenge." : "Invalid authorship proof. Do not rely on this artifact.");
+    } catch { setEvidenceStatus("Invalid authorship proof. Do not rely on this artifact."); }
+  }
+
   return (
     <main>
       <nav><span className="brand"><i /> VEILZERO</span><span className="network"><b /> READ-ONLY DEMO · NO WALLET</span></nav>
@@ -253,6 +264,16 @@ export default function Home() {
       <section className="lifecycle">
         <p className="eyebrow">ON-CHAIN CASE LIFECYCLE</p><h2>Commitments force the process into daylight.<br />The report stays in the dark.</h2>
         <div className="steps">{phases.map((phase, index) => <div className={index === 0 ? "step active" : "step"} key={phase}><span>0{index + 1}</span><strong>{phase}</strong><small>{index === 0 ? "Report + ciphertext commitments" : index === 1 ? "Acknowledgement clock stops" : index === 2 ? "Fixed reward tier is bound" : index === 3 ? "One-time nullifier issued" : "Shielded note returned"}</small></div>)}</div>
+      </section>
+
+      <section className="boundary" id="evidence-verifier">
+        <p className="eyebrow">SELECTIVE EVIDENCE</p><h2>Verify one case.<br />Learn nothing about the researcher&apos;s other cases.</h2>
+        <div className="panel receiptPanel">
+          <p>Import a public authorship proof. Verification checks its case/report commitments, challenge, case public key, and Stark signature locally. The file is not uploaded or persisted.</p>
+          <label htmlFor="authorship-proof">Authorship proof <small>JSON, maximum 32 KiB</small></label>
+          <input id="authorship-proof" type="file" accept="application/json,.json" onChange={(event) => void importAuthorshipEvidence(event.target.files?.[0])} />
+          <p className="mono" aria-live="polite">{evidenceStatus}</p>
+        </div>
       </section>
 
       <section className="boundary" id="live-pool-evidence">

@@ -1,5 +1,7 @@
 # Three-minute demo script
 
+If live explorer latency consumes the evidence segment, use the public authorship-proof export/import round trip as the judge-visible fallback, then show the already reconciled explorer receipt. Never imply that the off-chain proof replaces mainnet transaction evidence.
+
 - 0:00–0:20 — A critical report should not force identity and wallet-history disclosure.
 - 0:20–0:50 — Generate the vendor program key locally; show policy, fixed tiers, deadlines and the visible privacy boundary.
 - 0:50–1:30 — Encrypt a report to the X25519 program key, show field-safe commitments, export the secret-free encrypted case, decrypt it locally as the vendor, then contrast researcher recovery and public authorship exports; emphasize “Not submitted” until receipt.

@@ -19,7 +19,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Shareable encrypted case envelope | Implemented + unit/browser tested | Public JSON excludes secrets; its ciphertext commitment is verified before decryption |
 | Domain-separated case/report commitments | Implemented + unit tested | `VEILZERO_V1` domains |
 | Recovery-package export | Implemented | Read-only browser demo |
-| Selective authorship proof | Implemented + unit tested | Case-scoped Stark signature; no recovery secrets exported |
+| Selective authorship proof and local verifier | Implemented + unit/browser tested | Strict bounded import, case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
 | Vendor program and lifecycle call construction | Implemented + unit tested; live unverified | Bounded configuration, exact reserve approval, fixed entrypoints and expiry checks |

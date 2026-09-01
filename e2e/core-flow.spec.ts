@@ -14,7 +14,11 @@ test("encrypts locally without claiming chain success", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Export encrypted case" })).toBeEnabled();
   await page.getByRole("button", { name: "Decrypt encrypted case" }).click();
   await expect(page.getByText(plaintext)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Export public authorship proof" })).toBeEnabled();
+  const downloadStarted = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export public authorship proof" }).click();
+  const proof = await downloadStarted;
+  await page.getByLabel(/Authorship proof/).setInputFiles(await proof.path() as string);
+  await expect(page.getByText("Valid VeilZero authorship proof.", { exact: false })).toBeVisible();
 });
 
 test("binds a public vendor manifest without exposing the private key", async ({ page }) => {
