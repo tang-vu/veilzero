@@ -6,7 +6,7 @@ The researcher exports a strict, public JSON artifact after creating a case unde
 - a Poseidon commitment to the locally retained one-time claim secret;
 - the case signing public and verification keys;
 - a case-key signature over `VZ_REWARD_REQ_V1`, program, case, and claim commitment;
-- version, kind, message hash, and creation time.
+- version, kind, and message hash.
 
 It never contains the claim secret, case signing private key, report plaintext, local encryption key, or recovery witness. Unknown fields fail schema validation, and browser imports are capped at 32 KiB.
 

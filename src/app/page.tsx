@@ -307,6 +307,7 @@ export default function Home() {
       </section>
 
       <VendorTransactionPreview
+        key={`${programManifest?.programId ?? "no-program"}:${importedEnvelope?.caseCommitment ?? casePackage?.caseCommitment ?? "no-case"}`}
         program={programManifest}
         caseEnvelope={importedEnvelope ?? (casePackage?.algorithm === "X25519-HKDF-SHA256+A256GCM" ? toPublicCaseEnvelope(casePackage) : null)}
       />

@@ -8,7 +8,10 @@ import {
   signRewardAuthorizationRequest,
 } from "./protocol-auth";
 
-const felt = z.string().max(66).regex(/^0x[0-9a-f]+$/i);
+const felt = z.string().max(66).regex(/^0x[0-9a-f]+$/i).refine((value) => {
+  const parsed = BigInt(value);
+  return parsed > 0n && parsed < BigInt(ec.starkCurve.MAX_VALUE);
+}, "Expected a non-zero Stark field element.");
 const verificationKey = z.string().max(134).regex(/^0x[0-9a-f]+$/i);
 const requestSchema = z.object({
   version: z.literal(1),
@@ -20,7 +23,6 @@ const requestSchema = z.object({
   caseSigningVerificationKey: verificationKey,
   messageHash: felt,
   signature: z.object({ r: felt, s: felt }).strict(),
-  createdAt: z.iso.datetime(),
 }).strict();
 
 export type RewardAuthorizationRequest = z.infer<typeof requestSchema>;
@@ -50,7 +52,6 @@ export function createRewardAuthorizationRequest(
     caseSigningVerificationKey: casePackage.caseSigningVerificationKey,
     messageHash: signed.messageHash,
     signature: { r: signed.r, s: signed.s },
-    createdAt: new Date().toISOString(),
   });
 }
 

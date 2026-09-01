@@ -38,6 +38,8 @@ describe("reward authorization request", () => {
     const request = createRewardAuthorizationRequest(program, casePackage);
     expect(() => verifyRewardAuthorizationRequest({ ...request, caseId: "0x999" })).toThrow();
     expect(() => verifyRewardAuthorizationRequest({ ...request, claimSecret: casePackage.claimSecret })).toThrow();
+    expect(() => verifyRewardAuthorizationRequest({ ...request, claimCommitment: "0x0" })).toThrow("non-zero Stark");
+    expect(() => verifyRewardAuthorizationRequest({ ...request, caseId: `0x${"f".repeat(64)}` })).toThrow("non-zero Stark");
   });
 
   it("rejects a case encrypted for a different program key", async () => {

@@ -4,6 +4,6 @@ Hidden intent, public facts and correlation surfaces are listed in the README an
 
 The pool/prover/discovery route may see requests, timing, sizes and wallet/network metadata depending on the selected official deployment. OHTTP can hide payloads from a relay but not timing/size, and trust-on-first-use is not equivalent to pinning. No service URL is guessed or configured.
 
-The reward authorization request is intentionally public and contains program ID, case ID, claim commitment, case public key, signature, message hash, and creation time. It excludes the claim secret and every private key. Its program/case association is therefore visible, while the secret needed to claim remains only in the researcher recovery package until settlement calldata reveals it.
+The reward authorization request is intentionally public and contains program ID, case ID, claim commitment, case public key, signature, and message hash. It excludes the claim secret, unsigned timestamps, and every private key. Its program/case association is therefore visible, while the secret needed to claim remains only in the researcher recovery package until settlement calldata reveals it.
 
 Shield deposits are public. The one-time claim secret and case signature become public in successful settlement calldata; their unrelated recovery material remains hidden. Fixed tiers reduce, but do not remove, amount fingerprinting. `privacy_invoke` call shape, contract, timing, lifecycle and arguments are public/correlatable. The software makes no absolute-anonymity or compliance claim.
