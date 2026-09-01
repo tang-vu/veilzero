@@ -5,10 +5,14 @@ use snforge_std::signature::stark_curve::{
 };
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, EventSpyTrait, declare, spy_events,
-    start_cheat_caller_address,
+    start_cheat_caller_address, start_cheat_transaction_version,
 };
 use starknet::ContractAddress;
 use veilzero_protocol::{IVeilZeroDispatcher, IVeilZeroDispatcherTrait};
+
+const NOTE_MARKER_BEFORE: felt252 = 'VZ_NOTE_BEGIN_V1';
+const NOTE_MARKER_AFTER: felt252 = 'VZ_NOTE_END_V1';
+const ESTIMATION_VERSION: felt252 = 0x100000000000000000000000000000003;
 
 #[starknet::interface]
 trait IMockToken<TState> {
@@ -129,7 +133,9 @@ fn submit_case(
 ) {
     start_cheat_caller_address(contract_address, pool);
     let deposits = dispatcher
-        .privacy_invoke(0, program_id, case_id, 201, 202, 128, researcher_key().public_key, 0, 0);
+        .privacy_invoke(
+            0, program_id, case_id, 201, 202, 128, researcher_key().public_key, 0, 0, 0, 0,
+        );
     assert(deposits.len() == 0, 'unexpected deposit');
 }
 
@@ -245,7 +251,7 @@ fn privacy_action_rejects_non_pool_caller() {
     let (dispatcher, contract_address, _, token) = deploy_protocol();
     let admin = address(222);
     create_program(dispatcher, contract_address, admin, token, 1);
-    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 128, 203, 0, 0);
+    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 128, 203, 0, 0, 0, 0);
 }
 
 #[test]
@@ -264,7 +270,7 @@ fn empty_payload_is_rejected() {
     let (dispatcher, contract_address, pool, token) = deploy_protocol();
     create_program(dispatcher, contract_address, address(222), token, 1);
     start_cheat_caller_address(contract_address, pool);
-    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 0, 203, 0, 0);
+    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 0, 203, 0, 0, 0, 0);
 }
 
 #[test]
@@ -273,7 +279,7 @@ fn oversized_payload_is_rejected() {
     let (dispatcher, contract_address, pool, token) = deploy_protocol();
     create_program(dispatcher, contract_address, address(222), token, 1);
     start_cheat_caller_address(contract_address, pool);
-    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 16401, 203, 0, 0);
+    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 16401, 203, 0, 0, 0, 0);
 }
 
 #[test]
@@ -289,7 +295,8 @@ fn reserve_backed_claim_returns_one_note_and_debits_reserve() {
     dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
-    let deposits = dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, 777);
+    let deposits = dispatcher
+        .privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
     assert(deposits.len() == 1, 'one note');
     let deposit = *deposits.at(0);
     assert(deposit.amount == 20, 'tier amount');
@@ -312,8 +319,8 @@ fn duplicate_settlement_is_rejected() {
     dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
-    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, 777);
-    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, 777);
+    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
+    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
 }
 
 #[test]
@@ -330,7 +337,7 @@ fn wrong_nullifier_is_rejected() {
     dispatcher.authorize_reward(1, 7, 1, make_claim_commitment(1, 7, 555), 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 556, 777)).unwrap();
-    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 556, 777);
+    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 556, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
 }
 
 #[test]
@@ -346,7 +353,7 @@ fn zero_nullifier_is_rejected() {
     dispatcher.decide(1, 7, true);
     dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
     start_cheat_caller_address(contract_address, pool);
-    dispatcher.privacy_invoke(2, 1, 7, 1, 1, 0, 0, 0, 777);
+    dispatcher.privacy_invoke(2, 1, 7, 1, 1, 0, 0, 0, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
 }
 
 #[test]
@@ -400,7 +407,60 @@ fn claim_cannot_substitute_destination_note() {
     dispatcher.authorize_reward(1, 7, 1, make_claim_commitment(1, 7, 555), 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
-    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, 778);
+    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 778, NOTE_MARKER_AFTER);
+}
+
+#[test]
+fn estimation_preview_accepts_only_zero_signature_and_returns_bound_note() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    start_cheat_caller_address(contract_address, pool);
+    start_cheat_transaction_version(contract_address, ESTIMATION_VERSION);
+    let deposits = dispatcher
+        .privacy_invoke(2, 1, 7, 0, 0, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
+    assert(deposits.len() == 1, 'preview missing deposit');
+    let deposit = *deposits.at(0);
+    assert(deposit.note_id == 777, 'preview note mismatch');
+}
+
+#[test]
+#[should_panic(expected: 'BAD_SIGNATURE')]
+fn canonical_transaction_rejects_preview_signature() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    start_cheat_caller_address(contract_address, pool);
+    dispatcher.privacy_invoke(2, 1, 7, 0, 0, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
+}
+
+#[test]
+#[should_panic(expected: 'BAD_CLAIM')]
+fn claim_rejects_note_marker_substitution() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
+    start_cheat_caller_address(contract_address, pool);
+    dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, 1, 777, NOTE_MARKER_AFTER);
 }
 
 #[test]
@@ -409,10 +469,10 @@ fn signed_clarification_is_accepted() {
     create_program(dispatcher, contract_address, address(222), token, 1);
     let key_pair = StarkCurveKeyPairImpl::generate();
     start_cheat_caller_address(contract_address, pool);
-    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 128, key_pair.public_key, 0, 0);
+    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 128, key_pair.public_key, 0, 0, 0, 0);
     let message_hash = make_clarification_hash(1, 7, 301, 302, 64);
     let (r, s) = key_pair.sign(message_hash).unwrap();
-    let deposits = dispatcher.privacy_invoke(1, 1, 7, 301, 302, 64, r, s, 0);
+    let deposits = dispatcher.privacy_invoke(1, 1, 7, 301, 302, 64, r, s, 0, 0, 0);
     assert(deposits.is_empty(), 'unexpected note');
 }
 
@@ -424,8 +484,8 @@ fn forged_clarification_is_rejected() {
     let researcher = StarkCurveKeyPairImpl::generate();
     let attacker = StarkCurveKeyPairImpl::generate();
     start_cheat_caller_address(contract_address, pool);
-    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 128, researcher.public_key, 0, 0);
+    dispatcher.privacy_invoke(0, 1, 7, 201, 202, 128, researcher.public_key, 0, 0, 0, 0);
     let message_hash = make_clarification_hash(1, 7, 301, 302, 64);
     let (r, s) = attacker.sign(message_hash).unwrap();
-    dispatcher.privacy_invoke(1, 1, 7, 301, 302, 64, r, s, 0);
+    dispatcher.privacy_invoke(1, 1, 7, 301, 302, 64, r, s, 0, 0, 0);
 }

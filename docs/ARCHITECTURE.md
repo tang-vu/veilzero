@@ -20,4 +20,4 @@ sequenceDiagram
   P-->>W: Shielded note
 ```
 
-No database or key-holding backend is used. Hosted proving/discovery remain unconfigured until an official endpoint and its visibility are verified. The claim adapter is intentionally deferred: Wallet API 0.10.3 resolves an open-note placeholder during preparation, but the contract requires the exact resolved note ID in the case-key signature. A live compatible wallet must prove that prepare/sign/re-prepare preserves the binding before submission is enabled.
+No database or key-holding backend is used. Hosted proving/discovery remain unconfigured until an official endpoint and its visibility are verified. The claim adapter uses Wallet API 0.10.3 twice: a non-submittable estimation call resolves a marker-delimited open-note ID, the browser case key signs it, and a proof-producing preparation must resolve the identical ID. Empty proofs and drift abort before submission. Local client and contract tests pass; a live compatible wallet must still prove this behavior before submission is enabled.

@@ -14,7 +14,7 @@ Git: conventional commits, no force pushes, no rewritten evidence, no broken mai
 
 Tests: positive and negative protocol paths, encryption nonce uniqueness, no fake success, rejected/failed/ambiguous wallet states, replay/nullifier/cross-program defenses, builds from a clean clone.
 
-Current status: public repository, accepted registration and GitHub Pages demo are live; X25519 vendor encryption, secret-free public case envelopes, selective authorship evidence, read-only Wallet API diagnostics and TypeScript/browser/Cairo checks pass. Live write-ABI validation, Sepolia, mainnet and video remain. Known blockers: human wallet signatures, no verified public prover, issue #978's live ABI mismatch, and unvalidated Wallet API note-ID binding for claims. Highest-value next task: validate the live pool ABI and secure prepare/sign/re-prepare claim binding with a compatible wallet before preparing a browser-signed deployment.
+Current status: public repository, accepted registration and GitHub Pages demo are live; X25519 vendor encryption, secret-free public case envelopes, selective authorship evidence, read-only Wallet API diagnostics, and the estimation-preview destination-bound claim adapter pass local TypeScript/Cairo checks. Live write-ABI validation, Sepolia, mainnet and video remain. Known blockers: human wallet signatures, no verified public prover, issue #978's live ABI mismatch, and live validation of Wallet API note-ID preparation. Highest-value next task: validate the live pool ABI and the implemented prepare/sign/re-prepare claim adapter with a compatible wallet before preparing a browser-signed deployment.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

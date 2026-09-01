@@ -6,6 +6,6 @@ Qualification sequence: private case submission through pool→VeilZero, private
 
 Authorization never publishes the raw claim secret. The vendor stores `Poseidon(VZ_CLAIM_AUTH_V1, program, case, secret)`. The final claim reveals the one-time secret and passes a case-key signature over `Poseidon(VZ_CLAIM_MSG_V1, program, case, secret, note_id)`. Do not sign a claim until the wallet has produced the exact destination note identifier used by the invocation.
 
-Deployment gate: Wallet API 0.10.3 accepts `${openNoteIds[0]}` in application actions and returns a resolved call from `wallet_strk20PrepareInvoke`. Before enabling a claim, validate with the chosen wallet that a simulated prepare can expose the candidate ID and that a subsequent proof-producing prepare resolves the identical ID after the case-key signature is inserted. Abort and discard the proof on any mismatch. This adapter is not implemented or claimed working yet.
+Deployment gate: `prepareDestinationBoundClaim` first calls `wallet_strk20PrepareInvoke(..., true)`. The contract accepts its zero signature only at transaction version `2^128 + 3`; two contract-checked markers surround the resolved note ID. The client signs that ID, calls `wallet_strk20PrepareInvoke(..., false)`, then rejects note drift or an incomplete proof. Before enabling a claim, validate this implementation with the chosen live wallet and pool. Never log or persist either prepared proof.
 
 Ambiguous receipt means stop. Never retry until transaction lookup and case/nullifier state prove the first attempt absent or failed.

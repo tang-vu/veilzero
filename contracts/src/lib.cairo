@@ -84,7 +84,9 @@ pub trait IVeilZero<TState> {
         payload_size: u32,
         auth_commitment: felt252,
         nullifier: felt252,
+        note_marker_before: felt252,
         note_id: felt252,
+        note_marker_after: felt252,
     ) -> Span<OpenNoteDeposit>;
     fn get_case_status(self: @TState, program_id: felt252, case_id: felt252) -> u8;
     fn get_reserve(self: @TState, program_id: felt252) -> u128;
@@ -112,6 +114,9 @@ mod VeilZero {
     const CLAIM_AUTH_DOMAIN: felt252 = 'VZ_CLAIM_AUTH_V1';
     const CLAIM_MESSAGE_DOMAIN: felt252 = 'VZ_CLAIM_MSG_V1';
     const CASE_KEY_DOMAIN: felt252 = 'VZ_CASE_KEY_V1';
+    const NOTE_MARKER_BEFORE: felt252 = 'VZ_NOTE_BEGIN_V1';
+    const NOTE_MARKER_AFTER: felt252 = 'VZ_NOTE_END_V1';
+    const ESTIMATION_VERSION: felt252 = 0x100000000000000000000000000000003;
 
     mod errors {
         pub const ONLY_POOL: felt252 = 'ONLY_POOL';
@@ -433,7 +438,9 @@ mod VeilZero {
             payload_size: u32,
             auth_commitment: felt252,
             nullifier: felt252,
+            note_marker_before: felt252,
             note_id: felt252,
+            note_marker_after: felt252,
         ) -> Span<OpenNoteDeposit> {
             assert(get_caller_address() == self.pool.read(), errors::ONLY_POOL);
             assert(!self.program_admin.entry(program_id).read().is_zero(), errors::UNKNOWN_PROGRAM);
@@ -447,6 +454,10 @@ mod VeilZero {
                 );
                 assert(payload_size > 0, errors::EMPTY_PAYLOAD);
                 assert(payload_size <= MAX_PAYLOAD_SIZE, errors::PAYLOAD_TOO_LARGE);
+                assert(
+                    note_marker_before == 0 && note_id == 0 && note_marker_after == 0,
+                    errors::BAD_ACTION,
+                );
                 let now = get_block_timestamp();
                 self.case_status.entry(key).write(1);
                 self.case_created_at.entry(key).write(now);
@@ -475,7 +486,10 @@ mod VeilZero {
                 assert(report_commitment != 0 && ciphertext_hash != 0, errors::ZERO_COMMITMENT);
                 assert(payload_size > 0, errors::EMPTY_PAYLOAD);
                 assert(payload_size <= MAX_PAYLOAD_SIZE, errors::PAYLOAD_TOO_LARGE);
-                assert(note_id == 0, errors::BAD_ACTION);
+                assert(
+                    note_marker_before == 0 && note_id == 0 && note_marker_after == 0,
+                    errors::BAD_ACTION,
+                );
                 let message_hash = poseidon_hash_span(
                     array![
                         CLARIFY_DOMAIN, program_id, case_id, report_commitment, ciphertext_hash,
@@ -508,6 +522,10 @@ mod VeilZero {
                 get_block_timestamp() <= self.reward_expiry.entry(key).read(), errors::AUTH_EXPIRED,
             );
             assert(note_id != 0, errors::BAD_NULLIFIER);
+            assert(
+                note_marker_before == NOTE_MARKER_BEFORE && note_marker_after == NOTE_MARKER_AFTER,
+                errors::BAD_CLAIM,
+            );
             let claim_commitment = poseidon_hash_span(
                 array![CLAIM_AUTH_DOMAIN, program_id, case_id, nullifier].span(),
             );
@@ -518,13 +536,17 @@ mod VeilZero {
             let claim_message_hash = poseidon_hash_span(
                 array![CLAIM_MESSAGE_DOMAIN, program_id, case_id, nullifier, note_id].span(),
             );
+            let estimation_preview = starknet::get_tx_info().unbox().version == ESTIMATION_VERSION
+                && report_commitment == 0
+                && ciphertext_hash == 0;
             assert(
-                check_ecdsa_signature(
-                    claim_message_hash,
-                    self.case_auth_pubkey.entry(key).read(),
-                    report_commitment,
-                    ciphertext_hash,
-                ),
+                estimation_preview
+                    || check_ecdsa_signature(
+                        claim_message_hash,
+                        self.case_auth_pubkey.entry(key).read(),
+                        report_commitment,
+                        ciphertext_hash,
+                    ),
                 errors::BAD_SIGNATURE,
             );
             let tier = self.reward_tier.entry(key).read();

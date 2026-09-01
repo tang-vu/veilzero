@@ -10,7 +10,8 @@ Review opened 2026-09-01; unresolved findings are retained.
 | `privacy_invoke` caller confusion | Critical | Fixed in source | Pin configured pool; vendor calls are separate |
 | Duplicate settlement/nullifier reuse | Critical | Fixed + deployed-contract tested | status 4→5 + used-nullifier map before approval |
 | Public raw claim nullifier allowed destination theft | Critical | Fixed + adversarially tested | Authorization stores only a secret commitment; claim requires case-key signature over destination note |
-| Wallet resolves destination note after action construction | High integration | Open / blocks deployment | Keep destination binding; validate prepare/sign/re-prepare with a live Wallet API 0.10.3 implementation and abort on any note-ID drift |
+| Wallet resolves destination note after action construction | High integration | Mitigated locally / live validation blocks deployment | Estimation-version-only zero-signature preview, contract-checked markers, case signing, note-drift abort and proof-completeness checks pass; validate with live Wallet API 0.10.3 |
+| Estimation preview accidentally submittable | Critical | Fixed + contract tested | Zero-signature preview requires exact Starknet estimation version `2^128 + 3`; canonical transaction version rejects it |
 | Stored case-auth commitment was unused | Critical | Fixed + adversarially tested | Clarifications verify Stark ECDSA over domain/program/case/message/size |
 | Oversized/empty ciphertext | Medium | Fixed | 1..16400 ciphertext-byte contract bounds (16 KiB UTF-8 plaintext plus GCM tag) and tests |
 | Ambiguous transaction retry | High | Fixed in diagnostic model | Ambiguous state cannot resubmit |

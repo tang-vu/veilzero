@@ -5,7 +5,7 @@
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
 - A current organizer-approved proving/discovery endpoint has not been verified; none is configured.
 - Upstream issue #978 documents an anonymizer return-ABI mismatch between current `main` and the live Sepolia pool. Pool/contract compatibility must be proven before deployment.
-- Wallet API 0.10.3 resolves `${openNoteIds[0]}` only while preparing the STRK20 call. VeilZero must bind the case-key signature to that resolved destination. A compatible wallet must validate a safe prepare/sign/re-prepare sequence before the claim adapter or any deployment can be called ready.
+- The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter has local drift, proof-completeness and transaction-version tests, but still requires a compatible live wallet and pool to validate marker visibility and stable note resolution before deployment can be called ready.
 
 ## Cleared
 

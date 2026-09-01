@@ -23,6 +23,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented against starter ABI | Configured pool is caller, never the user |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
+| Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Estimation-only preview, marker extraction, case signature, proof completeness and note-drift abort |
 | Wallet API submission | Deferred pending live ABI validation | Diagnostic is explicitly read-only; no fake success path |
 | Mainnet evidence | Not started | `strk20.json` is honestly empty |
 
@@ -54,6 +55,8 @@ The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted 
 
 VeilZero is a stateful anonymizer rather than a private-transfer skin. Its contract pins the pool as the only `privacy_invoke` caller, stores project-specific state, returns the current `OpenNoteDeposit` ABI, and enforces project state before the pool can create the reward note. The mainnet route is blocked until the live pool/anonymizer boundary is verified; upstream issue #978 shows current `main` differs from the deployed Sepolia return ABI.
 
+The destination-bound claim preparation and its fail-closed invariants are documented in [docs/WALLET_CLAIM_ADAPTER.md](docs/WALLET_CLAIM_ADAPTER.md).
+
 ## Mainnet addresses and verified transactions
 
 No contract address or transaction hash is claimed yet.
@@ -68,7 +71,7 @@ No contract address or transaction hash is claimed yet.
 
 | Intended hidden | Public | Potentially correlatable |
 |---|---|---|
-| Report/follow-up plaintext; local case secret; authorship witness; unrelated cases; shielded recipient linkage where provided by STRK20 | Program/policy; contract addresses; action existence and timing; deadlines/status; shield deposit address, token and amount; amount if execution exposes it | Timing; fixed or unusual amounts; ciphertext size; IP/browser/network metadata; wallet behavior; deposit-to-action timing; low anonymity sets |
+| Report/follow-up plaintext; local case secret; authorship witness; unrelated cases; shielded recipient linkage where provided by STRK20 | Program/policy; contract addresses; action existence and timing; deadlines/status; one-time claim secret and signature after settlement; shield deposit address, token and amount; amount if execution exposes it | Timing; fixed or unusual amounts; ciphertext size; IP/browser/network metadata; wallet behavior; deposit-to-action timing; low anonymity sets |
 
 VeilZero does **not** claim absolute anonymity, hidden deposits, hidden timing, hidden network metadata, audit status, production safety, or regulatory compliance.
 
@@ -103,7 +106,7 @@ scarb test
 
 - X25519 envelope encryption requires modern WebCrypto support; the no-program-key path remains a conspicuously local-only diagnostic fallback.
 - No hosted prover or discovery endpoint is configured or trusted.
-- The live Wallet API claim adapter is not implemented: `${openNoteIds[0]}` is wallet-resolved after action construction, while VeilZero requires the resolved note ID in the case-key signature. A secure prepare/sign/re-prepare flow must be validated against a compatible wallet; destination binding will not be weakened to bypass this.
+- The destination-bound Wallet API claim adapter is implemented but not live-validated. It uses a non-submittable estimation preview to resolve `${openNoteIds[0]}`, signs that note, prepares the real proof, and aborts on note drift. A compatible wallet and deployed pool must verify the full behavior before enabling submission.
 - No contract is deployed; no mainnet transaction or fee exists.
 - Ciphertext delivery is an out-of-band public-envelope file in this MVP. Availability and transport confidentiality are not provided by VeilZero.
 - Vendor lifecycle calls are public by design in the MVP.

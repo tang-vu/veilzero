@@ -8,6 +8,6 @@
 
 For each action, the human wallet, token amount, live network estimate, live pool fee, contract address, calldata, expected event, recovery and reconciliation command must be filled immediately before signing. No placeholder hash enters `strk20.json`.
 
-Precondition for action 3: validate the Wallet API note-ID binding described in `docs/MAINNET_RUNBOOK.md`. A raw `${openNoteIds[0]}` placeholder cannot be signed by the case key. Do not weaken the contract signature or attempt mainnet settlement until the selected wallet's resolved call has been tested for stable prepare/sign/re-prepare binding.
+Precondition for action 3: live-validate `prepareDestinationBoundClaim` as described in `docs/MAINNET_RUNBOOK.md`. Do not attempt mainnet settlement until the selected wallet proves marker visibility, stable prepare/sign/re-prepare note binding and non-empty proof output.
 
 The verifier additionally requires `VEILZERO_PROGRAM_ID` and `VEILZERO_CASE_ID`; it checks each receipt at its historical block for the expected event and case status rather than treating generic contract involvement as sufficient.

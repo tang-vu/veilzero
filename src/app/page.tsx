@@ -137,7 +137,7 @@ export default function Home() {
         <h1>Report the critical bug.<br /><em>Keep the researcher out of the blast radius.</em></h1>
         <p className="lede">Encrypted reports. Cryptographic authorship. Deadlines a vendor cannot quietly rewrite. Fixed-tier rewards settled through STRK20.</p>
         <div className="heroActions"><a className="button primary" href="#submit">Create encrypted case</a><a className="button" href="#boundary">Inspect privacy boundary</a></div>
-        <div className="statusline"><span>IMPLEMENTED <strong>Browser encryption</strong></span><span>TESTED <strong>Case commitments</strong></span><span>BLOCKED <strong>Mainnet wallet signature</strong></span></div>
+        <div className="statusline"><span>IMPLEMENTED <strong>Browser encryption</strong></span><span>TESTED <strong>Destination-bound claims</strong></span><span>BLOCKED <strong>Live wallet validation</strong></span></div>
       </section>
 
       <section className="workflow" id="vendor-program">
