@@ -3,3 +3,15 @@
   --font-mono: "IBM Plex Mono", "Cascadia Mono", "SFMono-Regular", Consolas,
     "Liberation Mono", monospace;
 }
+
+.actionPreview {
+  max-height: 28rem;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: #0f1711;
+  color: #e8f0e9;
+  font: 11px/1.5 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

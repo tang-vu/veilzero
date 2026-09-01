@@ -24,7 +24,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
 | Vendor program, reserve and lifecycle calls | Implemented + unit tested; live unverified | Exact funding approval, case locks, paused available-reserve withdrawal, fixed entrypoints |
 | Reload-safe transaction reconciliation | Implemented + unit tested | Stores only public pending metadata; mismatches/timeouts remain ambiguous and block retry |
-| Shield/self-transfer/unshield diagnostic construction | Implemented + unit tested; submission disabled | Exact decimal conversion and fixed-value actions; `OPEN` is excluded |
+| Shield/self-transfer/unshield diagnostic construction | Implemented + unit/browser tested; submission disabled | Connected-account-bound UI previews exact fixed-value actions; `OPEN` is excluded |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented + contract tested + live ABI probed | Single-span return matches official docs and observed mainnet pool v2.0 |
 | Case-locked reserve and open-note settlement | Implemented + deployed-contract tested, not deployed | Authorization locks funds; expiry release; one-time nullifier |

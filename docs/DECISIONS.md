@@ -111,3 +111,7 @@ The application uses system font stacks instead of `next/font/google`. A clean-c
 ## 2026-09-02 — Fail CI on common text-encoding corruption
 
 Judge-facing source contained five double-decoded punctuation sequences that browser tests had accidentally learned as expected output. The corrected strings use proper UTF-8. A tracked-file scanner now rejects the Unicode replacement character and common UTF-8-as-Windows-1252 signatures in every non-binary tracked file, and Pages CI enforces it.
+
+## 2026-09-02 — Expose only non-submitting diagnostic action previews
+
+The developer panel renders shield, private self-transfer and unshield action arrays only after a read-only wallet connection supplies the public account address. Preview construction is local and fixed-value; it does not prepare a proof, estimate, sign or submit. This makes the implemented Wallet API mapping inspectable without weakening the live-validation and human-mainnet gates.

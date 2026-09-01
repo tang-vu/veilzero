@@ -16,7 +16,12 @@ import {
 import { createAuthorshipEvidence, verifyAuthorshipEvidence } from "@/lib/authorship-evidence";
 import { privacyBoundary } from "@/lib/privacy-boundary";
 import { createPublicProgramManifest, type PublicProgramManifest } from "@/lib/program-manifest";
-import { parseTokenAmount } from "@/lib/strk20-diagnostic-actions";
+import {
+  buildPrivateSelfTransferDiagnostic,
+  buildShieldDiagnostic,
+  buildUnshieldDiagnostic,
+  parseTokenAmount,
+} from "@/lib/strk20-diagnostic-actions";
 import { classifyChainId, safeWalletError } from "@/lib/wallet-diagnostics";
 
 const phases = ["Submitted", "Acknowledged", "Accepted", "Reward authorized", "Settled"] as const;
@@ -30,6 +35,11 @@ export default function Home() {
   const [wallets, setWallets] = useState<readonly WalletWithStarknetFeatures[]>([]);
   const [walletStatus, setWalletStatus] = useState("Discovery starts in this browser; no account is connected.");
   const [walletBusy, setWalletBusy] = useState("");
+  const [walletAccount, setWalletAccount] = useState("");
+  const [diagnosticToken, setDiagnosticToken] = useState("");
+  const [diagnosticAmount, setDiagnosticAmount] = useState("0.01");
+  const [diagnosticPreview, setDiagnosticPreview] = useState<unknown[] | null>(null);
+  const [diagnosticError, setDiagnosticError] = useState("");
   const [vendorKeys, setVendorKeys] = useState<VendorKeyPackage | null>(null);
   const [programManifest, setProgramManifest] = useState<PublicProgramManifest | null>(null);
   const [programName, setProgramName] = useState("VeilZero Security Program");
@@ -61,10 +71,11 @@ export default function Home() {
 
   async function probeWallet(wallet: WalletWithStarknetFeatures) {
     if (walletBusy) return;
-    setWalletBusy(wallet.name); setWalletStatus("Waiting for wallet approval…");
+    setWalletBusy(wallet.name); setWalletAccount(""); setDiagnosticPreview(null); setWalletStatus("Waiting for wallet approval…");
     try {
       const connection = await wallet.features["standard:connect"].connect();
       if (connection.accounts.length === 0) throw { code: "NO_AUTHORIZED_ACCOUNT" };
+      const account = String(connection.accounts[0].address);
       const request = wallet.features["starknet:walletApi"].request;
       const [chainId, specs, walletApis] = await Promise.all([
         request({ type: "wallet_requestChainId" }),
@@ -77,9 +88,25 @@ export default function Home() {
         await request({ type: "wallet_strk20Balances", params: { tokens: [] } });
         strk20 = "available; private balance query succeeded";
       } catch { strk20 = "not confirmed (unsupported, unregistered, or declined)"; }
+      setWalletAccount(account);
       setWalletStatus(`${wallet.name}: ${network}; Wallet API ${walletApis.join(", ") || "unknown"}; RPC specs ${specs.join(", ") || "unknown"}; STRK20 ${strk20}. No transaction was submitted.`);
     } catch (error) { setWalletStatus(safeWalletError(error)); }
     finally { setWalletBusy(""); }
+  }
+
+  function buildDiagnosticPreview() {
+    setDiagnosticError(""); setDiagnosticPreview(null);
+    try {
+      if (!walletAccount) throw new Error("Connect through the read-only wallet probe first.");
+      const input = { token: diagnosticToken, amount: diagnosticAmount, decimals: 18 };
+      setDiagnosticPreview([
+        { label: "Shield", actions: buildShieldDiagnostic(input) },
+        { label: "Private self-transfer", actions: buildPrivateSelfTransferDiagnostic(input, walletAccount) },
+        { label: "Unshield to connected account", actions: buildUnshieldDiagnostic({ ...input, recipient: walletAccount }) },
+      ]);
+    } catch (cause) {
+      setDiagnosticError(cause instanceof Error ? cause.message : "Diagnostic action validation failed safely.");
+    }
   }
 
   async function encrypt(event: FormEvent) {
@@ -300,6 +327,17 @@ export default function Home() {
             {wallets.length === 0 ? <span>No compatible Starknet wallet detected.</span> : wallets.map((wallet) => <button className="button" key={wallet.name} disabled={Boolean(walletBusy)} onClick={() => void probeWallet(wallet)}>{walletBusy === wallet.name ? "Probing…" : `Probe ${wallet.name}`}</button>)}
           </div>
           <p className="mono" aria-live="polite">{walletStatus}</p>
+          <h3>Fixed-value action preview</h3>
+          <p>After connection, build the exact shield, private self-transfer, and unshield actions locally. This does not call the wallet again, estimate a fee, create a proof, sign, or submit.</p>
+          <label htmlFor="diagnostic-token">Token address</label>
+          <input id="diagnostic-token" value={diagnosticToken} placeholder="0x…" autoComplete="off" onChange={(event) => { setDiagnosticToken(event.target.value); setDiagnosticPreview(null); }} />
+          <label htmlFor="diagnostic-amount">Amount <small>18-decimal token units</small></label>
+          <input id="diagnostic-amount" value={diagnosticAmount} inputMode="decimal" autoComplete="off" onChange={(event) => { setDiagnosticAmount(event.target.value); setDiagnosticPreview(null); }} />
+          <button className="button" disabled={!walletAccount} onClick={buildDiagnosticPreview}>Build non-submitting previews</button>
+          {!walletAccount && <p className="warning">Connect through the probe above before building account-bound previews.</p>}
+          {diagnosticError && <p className="error" role="alert">{diagnosticError}</p>}
+          {diagnosticPreview && <pre className="actionPreview" aria-label="STRK20 diagnostic action preview">{JSON.stringify(diagnosticPreview, null, 2)}</pre>}
+          <p className="warning">A preview is not a fee estimate or transaction. Re-read the pool fee, obtain a wallet estimate, apply the 100 STRK budget gate, and use a separate human signing gate before any write.</p>
         </div>
       </section>
 
