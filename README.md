@@ -2,7 +2,7 @@
 
 Private coordinated vulnerability disclosure with encrypted reports, proof-of-authorship, committed remediation timelines, and shielded STRK20 bounty settlement.
 
-> Status: browser encryption and the Cairo protocol are implemented locally. Mainnet contracts, transactions, public deployment, and video are not yet claimed. Empty evidence fields are intentional.
+> Status: browser encryption, read-only Wallet API diagnostics, Cairo protocol, and a public GitHub Pages demo are implemented. Mainnet contracts, transactions, and video are not yet claimed. Empty evidence fields are intentional.
 
 ## The problem
 
@@ -17,10 +17,11 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Local AES-256-GCM report encryption | Implemented + unit tested | `src/lib/case-crypto.ts` |
 | Domain-separated case/report commitments | Implemented + unit tested | `VEILZERO_V1` domains |
 | Recovery-package export | Implemented | Read-only browser demo |
+| Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Program, case and fixed-tier lifecycle | Implemented + Cairo build/test passing | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented against starter ABI | Configured pool is caller, never the user |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
-| Wallet API submission | Deferred pending live ABI validation | No fake success path |
+| Wallet API submission | Deferred pending live ABI validation | Diagnostic is explicitly read-only; no fake success path |
 | Mainnet evidence | Not started | `strk20.json` is honestly empty |
 
 ## Three-minute demo flow
@@ -108,7 +109,7 @@ The Cairo reserve/settlement anonymizer, explicit privacy-boundary model, eviden
 ## Roadmap
 
 1. Validate the exact live mainnet ABI and pool fee.
-2. Complete Wallet API diagnostics and browser-wallet transaction building.
+2. Validate Wallet API transaction building against the deployed pool ABI.
 3. Run Cairo and browser adversarial suites; deploy to a supported test path.
 4. Deploy through a human wallet gate, verify three mainnet transactions, publish demo and video.
 

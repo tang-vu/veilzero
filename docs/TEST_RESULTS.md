@@ -4,7 +4,7 @@
 |---|---|
 | ESLint | Pass, zero warnings |
 | TypeScript `--noEmit` | Pass |
-| Vitest | 10 passed, 0 failed |
+| Vitest | 13 passed, 0 failed |
 | Next.js 16.3.4 production build | Pass; static `/` |
 | Playwright Chromium | 1 passed, 0 failed |
 | `pnpm audit --audit-level high` | No known vulnerabilities |

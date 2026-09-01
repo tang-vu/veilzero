@@ -1,8 +1,10 @@
 "use client";
 
-import { FormEvent, useMemo, useState, useSyncExternalStore } from "react";
+import { FormEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import type { WalletWithStarknetFeatures } from "@starknet-io/get-starknet-wallet-standard/features";
 import { createCasePackage, type CasePackage } from "@/lib/case-crypto";
 import { privacyBoundary } from "@/lib/privacy-boundary";
+import { classifyChainId, safeWalletError } from "@/lib/wallet-diagnostics";
 
 const phases = ["Submitted", "Acknowledged", "Accepted", "Reward authorized", "Settled"] as const;
 
@@ -12,8 +14,48 @@ export default function Home() {
   const [casePackage, setCasePackage] = useState<CasePackage | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [wallets, setWallets] = useState<readonly WalletWithStarknetFeatures[]>([]);
+  const [walletStatus, setWalletStatus] = useState("Discovery starts in this browser; no account is connected.");
+  const [walletBusy, setWalletBusy] = useState("");
   const ready = useSyncExternalStore(() => () => undefined, () => true, () => false);
   const payloadLabel = useMemo(() => casePackage ? `${casePackage.ciphertext.length} encoded characters · ${casePackage.sizeClass}` : "Nothing has left this browser", [casePackage]);
+
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: () => void = () => undefined;
+    void import("@starknet-io/get-starknet-discovery").then(({ createStore }) => {
+      if (!active) return;
+      const store = createStore({ eip1193Adapters: [] });
+      const update = (next: readonly WalletWithStarknetFeatures[]) => setWallets(next);
+      update(store.getWallets());
+      unsubscribe = store.subscribe(update);
+      store._refreshInjectedWallets();
+    });
+    return () => { active = false; unsubscribe(); };
+  }, []);
+
+  async function probeWallet(wallet: WalletWithStarknetFeatures) {
+    if (walletBusy) return;
+    setWalletBusy(wallet.name); setWalletStatus("Waiting for wallet approval…");
+    try {
+      const connection = await wallet.features["standard:connect"].connect();
+      if (connection.accounts.length === 0) throw { code: "NO_AUTHORIZED_ACCOUNT" };
+      const request = wallet.features["starknet:walletApi"].request;
+      const [chainId, specs, walletApis] = await Promise.all([
+        request({ type: "wallet_requestChainId" }),
+        request({ type: "wallet_supportedSpecs" }),
+        request({ type: "wallet_supportedWalletApi" }),
+      ]);
+      const network = classifyChainId(String(chainId));
+      let strk20 = "unavailable";
+      try {
+        await request({ type: "wallet_strk20Balances", params: { tokens: [] } });
+        strk20 = "available; private balance query succeeded";
+      } catch { strk20 = "not confirmed (unsupported, unregistered, or declined)"; }
+      setWalletStatus(`${wallet.name}: ${network}; Wallet API ${walletApis.join(", ") || "unknown"}; RPC specs ${specs.join(", ") || "unknown"}; STRK20 ${strk20}. No transaction was submitted.`);
+    } catch (error) { setWalletStatus(safeWalletError(error)); }
+    finally { setWalletBusy(""); }
+  }
 
   async function encrypt(event: FormEvent) {
     event.preventDefault(); if (busy) return; setBusy(true); setError("");
@@ -70,6 +112,17 @@ export default function Home() {
       <section className="lifecycle">
         <p className="eyebrow">ON-CHAIN CASE LIFECYCLE</p><h2>Commitments force the process into daylight.<br />The report stays in the dark.</h2>
         <div className="steps">{phases.map((phase, index) => <div className={index === 0 ? "step active" : "step"} key={phase}><span>0{index + 1}</span><strong>{phase}</strong><small>{index === 0 ? "Report hash + bounded ciphertext" : index === 1 ? "Acknowledgement clock stops" : index === 2 ? "Fixed reward tier is bound" : index === 3 ? "One-time nullifier issued" : "Shielded note returned"}</small></div>)}</div>
+      </section>
+
+      <section className="boundary" id="wallet-diagnostics">
+        <p className="eyebrow">DEVELOPER DIAGNOSTIC · READ ONLY</p><h2>Probe the wallet before trusting a transaction path.</h2>
+        <div className="panel receiptPanel">
+          <p>Discovery follows the current Wallet Standard. A probe may request account permission, then reads chain, supported API versions, and STRK20 balance capability. It never signs or submits.</p>
+          <div className="heroActions">
+            {wallets.length === 0 ? <span>No compatible Starknet wallet detected.</span> : wallets.map((wallet) => <button className="button" key={wallet.name} disabled={Boolean(walletBusy)} onClick={() => void probeWallet(wallet)}>{walletBusy === wallet.name ? "Probing…" : `Probe ${wallet.name}`}</button>)}
+          </div>
+          <p className="mono" aria-live="polite">{walletStatus}</p>
+        </div>
       </section>
 
       <section className="boundary" id="boundary">

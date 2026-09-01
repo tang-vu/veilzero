@@ -19,3 +19,7 @@ Inside `privacy_invoke`, `msg.sender` is the pool. Researcher submission and set
 ## 2026-09-01 — Upgrade Next.js scaffold
 
 The starter-era 16.0.8 release emitted a security warning. VeilZero pins patched 16.3.4 and exact dependencies.
+
+## 2026-09-01 — Keep the public wallet diagnostic read-only
+
+The browser discovers Wallet Standard implementations and probes chain, API versions and STRK20 balance capability only after an explicit click. It does not prepare, sign or submit. Unknown wallet errors are redacted rather than rendering extension-provided messages.
