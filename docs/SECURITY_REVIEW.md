@@ -29,5 +29,6 @@ Review opened 2026-09-01; unresolved findings are retained.
 | Dependency vulnerability | High | Fixed | Next 16.0.8 rejected; pinned 16.3.4; `pnpm audit` reports no known vulnerabilities |
 | Mutable CI action tags / incomplete deploy gate | High supply chain | Fixed | Pages actions are pinned to resolved immutable commits; CI runs secret scan, `strk20.json` validation and dependency audit before artifact upload |
 | Cairo CI depends on mutable setup-action internals | High supply chain | Fixed | Contract CI downloads exact official Scarb/Foundry/USC release assets, verifies organizer-published SHA-256 digests, then checks formatting, 40 tests and artifact identity |
+| Judge path requested third-party fonts | Low privacy / availability | Fixed | Removed `next/font/google`; system stacks avoid the network request, metadata exposure and offline startup delay |
 
 The project has not received an independent audit.

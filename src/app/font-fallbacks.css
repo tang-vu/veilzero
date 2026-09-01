@@ -1,0 +1,5 @@
+:root {
+  --font-body: Manrope, "Avenir Next", Avenir, "Segoe UI", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Mono", "SFMono-Regular", Consolas,
+    "Liberation Mono", monospace;
+}

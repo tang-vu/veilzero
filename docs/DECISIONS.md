@@ -103,3 +103,7 @@ Permanent custody of unused funds is not acceptable. After pausing a program, it
 ## 2026-09-01 — Run Cairo CI from checksum-pinned official binaries
 
 The current Foundry setup action is composite and references another action by a mutable major tag. Instead, public CI downloads the exact official Scarb 2.20.1, Foundry 0.63.0 and Universal Sierra Compiler 2.10.0 Linux assets and verifies their release SHA-256 digests before execution. CI then enforces formatting, build, all contract tests and release artifact identity.
+
+## 2026-09-02 — Remove runtime font-network dependency
+
+The application uses system font stacks instead of `next/font/google`. A clean-clone browser run showed that an unavailable Google Fonts endpoint could delay the development server even though fonts are nonessential. System fallbacks keep the judge path self-contained, avoid a third-party request and remove that metadata leak; Playwright allows 120 seconds for first compilation on slow filesystems.
