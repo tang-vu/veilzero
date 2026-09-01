@@ -6,6 +6,7 @@ Review opened 2026-09-01; unresolved findings are retained.
 |---|---|---|---|
 | Diagnostic package contains local key/secret | High operational | Open by design | Explicit warning, ignored filename, download only; replace with password-wrapped export |
 | Symmetric key was not vendor envelope encryption | High product | Fixed | Ephemeral X25519 + HKDF-SHA256 derives AES-GCM envelope keys; vendor decrypt round-trip and wrong-key tests pass |
+| Published program key/policy substitution | High integrity | Fixed locally | Canonical public manifest binds X25519 key, policy, deadlines, token and ordered tiers; researcher packages reuse the identical key commitment |
 | Pool ABI mismatch (#978) | High | Current live path validated; recheck required | Block-pinned mainnet ABI exposes the legacy single-span return VeilZero implements; the upgradeable pool is re-probed before each gate |
 | `privacy_invoke` caller confusion | Critical | Fixed in source | Pin configured pool; vendor calls are separate |
 | Duplicate settlement/nullifier reuse | Critical | Fixed + deployed-contract tested | status 4→5 + used-nullifier map before approval |

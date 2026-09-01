@@ -16,3 +16,14 @@ test("encrypts locally without claiming chain success", async ({ page }) => {
   await expect(page.getByText(plaintext)).toBeVisible();
   await expect(page.getByRole("button", { name: "Export public authorship proof" })).toBeEnabled();
 });
+
+test("binds a public vendor manifest without exposing the private key", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Generate program key" }).click();
+  await page.getByLabel("Reward token address").fill("0x456");
+  await page.getByRole("button", { name: "Bind public program manifest" }).click();
+  await expect(page.getByRole("button", { name: "Download public manifest" })).toBeEnabled();
+  await expect(page.locator("dt", { hasText: "Program ID" }).locator("xpath=following-sibling::dd")).not.toHaveText("â€”");
+  await expect(page.getByText(/privateKey/i)).toHaveCount(0);
+  await expect(page.getByText(/claimSecret/i)).toHaveCount(0);
+});

@@ -91,6 +91,14 @@ function randomFelt() {
   return `0x${(value || 1n).toString(16)}`;
 }
 
+export function generateProgramId(): string { return randomFelt(); }
+
+export async function deriveProgramEncryptionKeyCommitment(publicKey: string): Promise<string> {
+  const rawProgramKey = fromBase64(publicKey);
+  if (rawProgramKey.length !== 32) throw new Error("Program X25519 public key must decode to 32 bytes.");
+  return digest("PROGRAM_KEY", encoder.encode(publicKey));
+}
+
 async function deriveEnvelopeKey(privateKey: CryptoKey, publicKey: CryptoKey, salt: Uint8Array<ArrayBuffer>) {
   const shared = await crypto.subtle.deriveBits({ name: "X25519", public: publicKey }, privateKey, 256);
   const sharedKey = await crypto.subtle.importKey("raw", shared, "HKDF", false, ["deriveKey"]);
@@ -141,9 +149,11 @@ export async function createCasePackage(rawInput: unknown): Promise<CasePackage>
   const signingPrivateKey = `0x${hex(ec.starkCurve.utils.randomPrivateKey())}`;
   const signingPublicKey = ec.starkCurve.getStarkKey(signingPrivateKey);
   const signingVerificationKey = `0x${hex(ec.starkCurve.getPublicKey(signingPrivateKey))}`;
-  const programBinding = encoder.encode(input.programEncryptionKey ?? "diagnostic-local-key-only");
-  const programKeyBinding = await digest("PROGRAM_KEY", programBinding);
-  const caseCommitment = await digest("CASE", caseSecret, programBinding);
+  const programBinding = input.programEncryptionKey ?? "diagnostic-local-key-only";
+  const programKeyBinding = input.programEncryptionKey
+    ? await deriveProgramEncryptionKeyCommitment(input.programEncryptionKey)
+    : await digest("PROGRAM_KEY", encoder.encode(programBinding));
+  const caseCommitment = await digest("CASE", caseSecret, encoder.encode(programBinding));
   const reportCommitment = await digest("REPORT", reportBytes, caseSecret);
   return {
     version: 2, algorithm, caseCommitment,

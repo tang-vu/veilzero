@@ -15,6 +15,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Capability | State | Evidence |
 |---|---|---|
 | Vendor-readable X25519/HKDF/AES-GCM envelope encryption | Implemented + unit/browser tested | Keys and plaintext remain in-browser |
+| Public vendor program manifest | Implemented + unit/browser tested | Binds encryption key, policy, SLAs, token and fixed tiers; contains no private key |
 | Shareable encrypted case envelope | Implemented + unit/browser tested | Public JSON excludes secrets; its ciphertext commitment is verified before decryption |
 | Domain-separated case/report commitments | Implemented + unit tested | `VEILZERO_V1` domains |
 | Recovery-package export | Implemented | Read-only browser demo |

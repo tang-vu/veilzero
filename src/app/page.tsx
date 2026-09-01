@@ -5,6 +5,7 @@ import type { WalletWithStarknetFeatures } from "@starknet-io/get-starknet-walle
 import {
   createCasePackage,
   decryptCaseForVendor,
+  generateProgramId,
   generateVendorKeyPackage,
   parsePublicCaseEnvelope,
   toPublicCaseEnvelope,
@@ -14,6 +15,8 @@ import {
 } from "@/lib/case-crypto";
 import { createAuthorshipEvidence } from "@/lib/authorship-evidence";
 import { privacyBoundary } from "@/lib/privacy-boundary";
+import { createPublicProgramManifest, type PublicProgramManifest } from "@/lib/program-manifest";
+import { parseTokenAmount } from "@/lib/strk20-diagnostic-actions";
 import { classifyChainId, safeWalletError } from "@/lib/wallet-diagnostics";
 
 const phases = ["Submitted", "Acknowledged", "Accepted", "Reward authorized", "Settled"] as const;
@@ -28,6 +31,13 @@ export default function Home() {
   const [walletStatus, setWalletStatus] = useState("Discovery starts in this browser; no account is connected.");
   const [walletBusy, setWalletBusy] = useState("");
   const [vendorKeys, setVendorKeys] = useState<VendorKeyPackage | null>(null);
+  const [programManifest, setProgramManifest] = useState<PublicProgramManifest | null>(null);
+  const [programName, setProgramName] = useState("VeilZero Security Program");
+  const [programPolicy, setProgramPolicy] = useState("Acknowledge encrypted reports within 24 hours and remediate accepted critical findings within 14 days.");
+  const [programToken, setProgramToken] = useState("");
+  const [acknowledgementHours, setAcknowledgementHours] = useState("24");
+  const [remediationDays, setRemediationDays] = useState("14");
+  const [rewardTiers, setRewardTiers] = useState(["10", "25", "50"]);
   const [vendorPlaintext, setVendorPlaintext] = useState("");
   const [importedEnvelope, setImportedEnvelope] = useState<PublicCaseEnvelope | null>(null);
   const [vendorBusy, setVendorBusy] = useState(false);
@@ -106,9 +116,32 @@ export default function Home() {
     setVendorBusy(true); setError(""); setVendorPlaintext("");
     try {
       const generated = await generateVendorKeyPackage();
-      setVendorKeys(generated); setProgramKey(generated.publicKey);
+      setVendorKeys(generated); setProgramKey(generated.publicKey); setProgramManifest(null);
     } catch { setError("This browser does not provide the required X25519 WebCrypto support."); }
     finally { setVendorBusy(false); }
+  }
+
+  async function buildProgramManifest() {
+    if (!vendorKeys || vendorBusy) return;
+    setVendorBusy(true); setError("");
+    try {
+      const acknowledgementSla = Number(acknowledgementHours) * 3_600;
+      const remediationSla = Number(remediationDays) * 86_400;
+      const manifest = await createPublicProgramManifest({
+        programId: generateProgramId(),
+        name: programName,
+        encryptionPublicKey: vendorKeys.publicKey,
+        policy: programPolicy,
+        acknowledgementSla,
+        remediationSla,
+        token: programToken,
+        rewardTiers: rewardTiers.map((value) => BigInt(parseTokenAmount(value)).toString()) as [string, string, string],
+      });
+      setProgramManifest(manifest);
+    } catch (cause) {
+      setProgramManifest(null);
+      setError(cause instanceof Error ? cause.message : "Program manifest validation failed safely.");
+    } finally { setVendorBusy(false); }
   }
 
   async function decryptAsVendor() {
@@ -150,6 +183,29 @@ export default function Home() {
             <button className="button" disabled={!vendorKeys} onClick={() => vendorKeys && downloadJson(vendorKeys, `veilzero-vendor-key-${Date.now()}.json`)}>Download private key package</button>
           </div>
           <p className="mono">{vendorKeys?.publicKey ?? "No program key generated."}</p>
+          <label htmlFor="program-name">Program name</label>
+          <input id="program-name" value={programName} maxLength={80} onChange={(event) => setProgramName(event.target.value)} />
+          <label htmlFor="program-policy">Disclosure policy <small>Committed publicly; do not include report details</small></label>
+          <textarea id="program-policy" value={programPolicy} minLength={20} maxLength={4096} onChange={(event) => setProgramPolicy(event.target.value)} />
+          <label htmlFor="program-token">Reward token address</label>
+          <input id="program-token" value={programToken} placeholder="0xâ€¦" autoComplete="off" onChange={(event) => setProgramToken(event.target.value)} />
+          <label htmlFor="ack-sla">Acknowledgement SLA <small>hours</small></label>
+          <input id="ack-sla" type="number" min="1" step="1" value={acknowledgementHours} onChange={(event) => setAcknowledgementHours(event.target.value)} />
+          <label htmlFor="remediation-sla">Remediation SLA <small>days</small></label>
+          <input id="remediation-sla" type="number" min="1" step="1" value={remediationDays} onChange={(event) => setRemediationDays(event.target.value)} />
+          <label htmlFor="tier-1">Fixed reward tiers <small>token units, strictly increasing</small></label>
+          <div className="heroActions">
+            {rewardTiers.map((value, index) => <input key={index} id={`tier-${index + 1}`} aria-label={`Reward tier ${index + 1}`} value={value} inputMode="decimal" onChange={(event) => setRewardTiers((current) => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} />)}
+          </div>
+          <div className="heroActions">
+            <button className="button" disabled={!vendorKeys || vendorBusy} onClick={() => void buildProgramManifest()}>Bind public program manifest</button>
+            <button className="button" disabled={!programManifest} onClick={() => programManifest && downloadJson(programManifest, `veilzero-program-${programManifest.programId.slice(2, 14)}.json`)}>Download public manifest</button>
+          </div>
+          <dl>
+            <div><dt>Program ID</dt><dd className="mono">{programManifest?.programId ?? "â€”"}</dd></div>
+            <div><dt>Encryption key commitment</dt><dd className="mono">{programManifest?.encryptionKeyCommitment ?? "â€”"}</dd></div>
+            <div><dt>Policy commitment</dt><dd className="mono">{programManifest?.policyCommitment ?? "â€”"}</dd></div>
+          </dl>
           <p className="warning">The vendor key package decrypts every report for this program. Store it offline; never commit or share it.</p>
         </div>
         <aside className="panel receiptPanel">

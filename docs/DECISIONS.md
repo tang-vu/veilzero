@@ -79,3 +79,7 @@ Reload reconciliation stores a strict hash/network/action/contract/timestamp rec
 ## 2026-09-01 — Keep wallet diagnostics fixed-value and decimal-exact
 
 Shield, transfer, self-transfer and unshield diagnostics parse plain decimal strings to integer units without floating point and reject zero, exponent notation, excess precision and overflow. These paths cannot request `OPEN`; open-note creation is reserved for the destination-bound reward claim. Builders remain non-submitting until the live wallet gate.
+
+## 2026-09-01 — Bind the vendor program in a secret-free public manifest
+
+The browser emits a canonical manifest whose commitments cover the X25519 public key, policy, SLAs, token and strictly ordered reward tiers. Researcher packages derive the identical encryption-key commitment. The private vendor key remains a separate sensitive download, and the manifest is not treated as deployed evidence until a matching receipt exists.
