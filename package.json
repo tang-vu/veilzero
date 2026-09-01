@@ -18,6 +18,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "verify:strk20": "node scripts/verify-strk20-json.mjs",
     "verify:evidence": "node scripts/verify-mainnet-evidence.mjs",
+    "verify:artifact": "node scripts/verify-contract-artifact.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs"
   },
   "dependencies": {

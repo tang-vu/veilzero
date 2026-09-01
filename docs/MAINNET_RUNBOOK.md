@@ -9,3 +9,5 @@ Authorization never publishes the raw claim secret. The vendor stores `Poseidon(
 Deployment gate: `prepareDestinationBoundClaim` first calls `wallet_strk20PrepareInvoke(..., true)`. The contract accepts its zero signature only at transaction version `2^128 + 3`; two contract-checked markers surround the resolved note ID. The client signs that ID, calls `wallet_strk20PrepareInvoke(..., false)`, then rejects note drift or an incomplete proof. Before enabling a claim, validate this implementation with the chosen live wallet and pool. Never log or persist either prepared proof.
 
 Ambiguous receipt means stop. Never retry until transaction lookup and case/nullifier state prove the first attempt absent or failed.
+
+The release-candidate build identity is recorded in `docs/evidence/contract-artifact.md` and checked with `pnpm verify:artifact`. A matching class hash proves only artifact identity. It does not prove declaration, deployment, pool compatibility, or transaction execution. Before any declaration, rebuild from the exact release commit and rerun the verifier; any source or dependency change requires recording new hashes.

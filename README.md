@@ -24,6 +24,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Pool-pinned `privacy_invoke` | Implemented against starter ABI | Configured pool is caller, never the user |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
 | Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Estimation-only preview, marker extraction, case signature, proof completeness and note-drift abort |
+| Reproducible contract artifact identity | Verified locally, not declared | Pinned Sierra/CASM SHA-256 and class hashes in `docs/evidence/contract-artifact.md` |
 | Wallet API submission | Deferred pending live ABI validation | Diagnostic is explicitly read-only; no fake success path |
 | Mainnet evidence | Not started | `strk20.json` is honestly empty |
 
@@ -98,8 +99,9 @@ pnpm build
 pnpm test:e2e
 pnpm scan:secrets
 cd contracts && scarb build
+cd .. && pnpm verify:artifact
 # Linux/WSL with Starknet Foundry 0.63.0:
-scarb test
+cd contracts && scarb test
 ```
 
 ## Current limitations

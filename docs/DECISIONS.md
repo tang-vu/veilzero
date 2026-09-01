@@ -51,3 +51,7 @@ The adapter now performs an estimation prepare with a zero claim signature. The 
 ## 2026-09-01 — Pin public deployment actions
 
 Every external GitHub Action in the Pages workflow is pinned to the commit resolved from its documented major-version tag on this date. The deployment build also runs the tracked-file secret scanner, evidence-manifest validator and dependency audit before uploading the static artifact.
+
+## 2026-09-01 — Pin the release-candidate contract artifact identity
+
+The release candidate records SHA-256 digests plus normalized Sierra and CASM class hashes. A tracked verifier recomputes all four values after a Scarb build. These identifiers are deliberately kept out of `strk20.json`: they prove deterministic artifact identity, not declaration, deployment or mainnet execution.
