@@ -4,6 +4,7 @@
 
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
 - The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter has local drift, proof-completeness and transaction-version tests, but still requires a compatible live wallet and pool to validate marker visibility and stable note resolution before deployment can be called ready.
+- The current case-signed reward-authorization class is built and identity-pinned but needs a fresh read-only declaration/deployment plan using a current process-scoped RPC and the dedicated wallet's public address. No dummy address will be promoted to evidence.
 - A real three-minute video requires the human-signed deployed flow and remains unrecorded.
 
 ## Exact continuation

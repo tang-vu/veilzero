@@ -16,6 +16,8 @@ On 2026-09-01, the reserve-custody release candidate was checked in a read-only 
 
 The run used dummy deployer address `0x123`. Its predicted contract address is a test fixture, not a deployment address or evidence, and is intentionally excluded from `strk20.json`.
 
+The current case-signed reward-authorization class hash is `0x01c4ddb21597feb40ad7d51da6749c1b8cd6b52b84b7ffe13ae4da9619920503`. Its artifact identity and deployment generator pass, but it has not been checked against live declaration state with the dedicated wallet's public address. The prior block-pinned run is historical compatibility evidence, not a deployment plan for the new class.
+
 ## Generate an address-specific plan
 
 Build and verify the release artifact first, then use a current process-scoped RPC and the dedicated browser wallet's public account address:
