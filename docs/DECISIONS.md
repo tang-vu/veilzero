@@ -71,3 +71,7 @@ Submission and clarification use a single STRK20 invoke action and never synthes
 ## 2026-09-01 — Constrain vendor administration to typed call builders
 
 Vendor calls are public account transactions but still fail closed before wallet interaction. Builders expose only the protocol's fixed entrypoints, validate Cairo-compatible numeric bounds and ordering, require reward expiry beyond a supplied current block timestamp, and approve exactly the reserve funding amount rather than an unlimited allowance.
+
+## 2026-09-01 — Persist only public pending-transaction metadata
+
+Reload reconciliation stores a strict hash/network/action/contract/timestamp record and no call, proof or secret material. Any timeout, missing or mismatched hash, incomplete status or RPC failure remains ambiguous and prevents another hash from being recorded. Terminal accepted or reverted receipts clear the pending lock; separate evidence verification remains mandatory.

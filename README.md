@@ -22,6 +22,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
 | Vendor program and lifecycle call construction | Implemented + unit tested; live unverified | Bounded configuration, exact reserve approval, fixed entrypoints and expiry checks |
+| Reload-safe transaction reconciliation | Implemented + unit tested | Stores only public pending metadata; mismatches/timeouts remain ambiguous and block retry |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented + contract tested + live ABI probed | Single-span return matches official docs and observed mainnet pool v2.0 |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
