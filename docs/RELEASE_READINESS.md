@@ -85,3 +85,10 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - Starknet.js and Starknet Foundry 0.63.0 `sncast` independently produced the same Sierra class hash. The new class is not declared or deployed; live declaration state must be rechecked with the dedicated wallet address before signing.
 - Public Cairo workflow `33540591730` rebuilt the exact public head with checksum-pinned tools, passed all 42 tests, matched both artifact digests, and reproduced Sierra class hash `0x01c4ddb21597feb40ad7d51da6749c1b8cd6b52b84b7ffe13ae4da9619920503`.
 - Pages workflow `33540591855` passed a fresh frozen/script-disabled install, 66 application tests, lint, strict typing, production build, manifest/link/encoding/secret/dependency gates, and deployment. The unauthenticated demo returned HTTP 200 with the signed reward-request/vendor handoff, explicit undeployed boundary, and no mojibake.
+
+## Current-head clean-clone verification — 2026-09-02
+
+- The independent public clone at `D:\ytb_tool_temp\veilzero-release-9ced11c15b934aac83189b5b8f8136fb` was restored to its tracked state, fast-forwarded to exact public commit `65ba82dcbaebc28c4d738cd6a344ceedc8910dcb`, and ran `pnpm install --frozen-lockfile --ignore-scripts` successfully. The lockfile dependency graph was unchanged and required no secret or local configuration.
+- In that clone, ESLint, strict TypeScript, all 66 Vitest tests, production build, all 3 Playwright flows, 35-file local-link validation, `strk20.json` validation, 109-file encoding and secret scans, and dependency audit passed.
+- Pinned Scarb 2.20.1 formatting/build reproduced the Sierra/CASM artifacts and all four recorded identities from the clean clone. The only tracked post-command changes were Next's generated development type paths and a line-ending-only `Scarb.lock` status with no content diff; no required untracked file appeared.
+- Public Cairo workflow `33540994606` and Pages workflow `33540994696` both passed at the same exact commit. The public Foundry run retained 42/42 Cairo tests, and the unauthenticated demo remained deployable from a frozen/script-disabled install.
