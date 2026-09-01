@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { hash as starknetHash } from "starknet";
+import { hasNestedCallPath, successfulExecuteInvocation } from "./lib/trace-path.mjs";
 
 const rpcUrl = process.env.STARKNET_RPC_URL;
 const pool = process.env.STRK20_POOL_ADDRESS?.toLowerCase();
@@ -33,8 +34,12 @@ for (const [index, transactionHash] of evidence.transactions.entries()) {
   const receipt = await rpc("starknet_getTransactionReceipt", [transactionHash]);
   if (receipt.execution_status !== "SUCCEEDED") throw new Error(`${transactionHash}: execution is ${receipt.execution_status}`);
   if (!String(receipt.finality_status).includes("ACCEPTED")) throw new Error(`${transactionHash}: finality is ${receipt.finality_status}`);
-  const eventAddresses = new Set((receipt.events ?? []).map((event) => String(event.from_address).toLowerCase()));
-  if (!eventAddresses.has(pool)) throw new Error(`${transactionHash}: no event emitted by configured live pool`);
+  const trace = await rpc("starknet_traceTransaction", [transactionHash]);
+  const executeInvocation = successfulExecuteInvocation(trace);
+  if (!executeInvocation) throw new Error(`${transactionHash}: missing or reverted execute trace`);
+  if (!hasNestedCallPath(executeInvocation, pool, [...contracts])) {
+    throw new Error(`${transactionHash}: trace does not prove live pool -> VeilZero contract execution`);
+  }
   const eventSelector = starknetHash.getSelectorFromName(expected[index].event).toLowerCase();
   const projectEvent = (receipt.events ?? []).find((event) => contracts.has(String(event.from_address).toLowerCase()) && (event.keys ?? []).some((key) => BigInt(key) === BigInt(eventSelector)));
   if (!projectEvent) throw new Error(`${transactionHash}: missing ${expected[index].event} from a declared VeilZero contract`);
@@ -46,5 +51,5 @@ for (const [index, transactionHash] of evidence.transactions.entries()) {
   }, { block_hash: receipt.block_hash }]);
   const status = `0x${BigInt(statusResult[0]).toString(16)}`;
   if (!expected[index].statuses.includes(status)) throw new Error(`${transactionHash}: case status ${status} does not match ${expected[index].statuses.join(" or ")}`);
-  console.log(`${transactionHash}: ${expected[index].event}; status ${status}; pool + project involvement; accepted and succeeded; actual fee ${receipt.actual_fee?.amount ?? "unreported"} ${receipt.actual_fee?.unit ?? "unit-unreported"}`);
+  console.log(`${transactionHash}: ${expected[index].event}; status ${status}; traced pool -> project path; accepted and succeeded; actual fee ${receipt.actual_fee?.amount ?? "unreported"} ${receipt.actual_fee?.unit ?? "unit-unreported"}`);
 }

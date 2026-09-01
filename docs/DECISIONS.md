@@ -87,3 +87,7 @@ The browser emits a canonical manifest whose commitments cover the X25519 public
 ## 2026-09-01 — Verify selective evidence with a strict local-only importer
 
 The judge-facing verifier caps files at 32 KiB, rejects unknown top-level or signature fields, recomputes the message binding and verifies the Stark key/signature locally. It renders only a validity verdict and never echoes or persists imported JSON. This artifact proves scoped authorship but never substitutes for mainnet evidence.
+
+## 2026-09-01 — Prove qualifying pool involvement from nested traces
+
+Mainnet verification requires a successful execution trace where the configured live STRK20 pool is an ancestor of the declared VeilZero contract call. Receipt events still prove the project-specific transition, but pool events or unrelated sibling calls cannot stand in for execution through the protocol path.
