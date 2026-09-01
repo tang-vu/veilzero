@@ -75,3 +75,7 @@ Vendor calls are public account transactions but still fail closed before wallet
 ## 2026-09-01 — Persist only public pending-transaction metadata
 
 Reload reconciliation stores a strict hash/network/action/contract/timestamp record and no call, proof or secret material. Any timeout, missing or mismatched hash, incomplete status or RPC failure remains ambiguous and prevents another hash from being recorded. Terminal accepted or reverted receipts clear the pending lock; separate evidence verification remains mandatory.
+
+## 2026-09-01 — Keep wallet diagnostics fixed-value and decimal-exact
+
+Shield, transfer, self-transfer and unshield diagnostics parse plain decimal strings to integer units without floating point and reject zero, exponent notation, excess precision and overflow. These paths cannot request `OPEN`; open-note creation is reserved for the destination-bound reward claim. Builders remain non-submitting until the live wallet gate.
