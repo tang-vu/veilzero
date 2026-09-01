@@ -63,3 +63,13 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - `scarb fmt --check`, `scarb build` and all 40 Cairo tests passed on the public runner.
 - The runner reproduced Sierra SHA-256 `b13014c00ee0e65831e50a2c46611c3f3d9e6ece41236117c7eef0bb1a2d852b`, CASM SHA-256 `8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53` and Sierra class hash `0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56`.
 - The companion Pages run `33533436651` also passed for the same exact commit. This makes the contract build/test evidence independently reproducible from the public repository rather than dependent only on the local Docker result.
+
+## Offline clean-clone verification — 2026-09-02
+
+- A new public clone at `D:\ytb_tool_temp\veilzero-release-9ced11c15b934aac83189b5b8f8136fb` installed the frozen lockfile with scripts disabled using pnpm 11.24.0. Windows package linking completed successfully in 18 minutes 29 seconds; no secret or local configuration was required.
+- The clone was fast-forwarded from documentation commit `7a3ee8f` to exact source commit `ec594e0565994b2bb3668dc6bee9ce08db0a1afb`; the dependency manifest and lockfile were unchanged by that source-only fix.
+- At `ec594e0`, ESLint, strict TypeScript, all 62 Vitest tests, production build, both Playwright flows, `strk20.json` validation, tracked-file secret scan and dependency audit passed in the isolated tree.
+- The first browser attempt revealed a Google Fonts availability delay. The release fix removed `next/font/google`, added privacy-preserving system font stacks and extended only the slow-filesystem server timeout. The repeated clean-tree browser run passed in one minute without a font-network request.
+- Generated `next-env.d.ts` was the only tracked dirty file after Next development/build commands; it contained the known generated dev-path switch and no required source. The ignored Cairo target was intentionally absent from the clone, so artifact identity remains verified by the exact-commit checksum-pinned Cairo workflow rather than by pretending generated artifacts ship in Git.
+- Public Cairo workflow `33537038038` independently rebuilt the unchanged contract and passed all 40 tests plus artifact identity at exact commit `ec594e0`.
+- Pages workflow `33537038062` completed a fresh frozen/script-disabled Linux install, all configured application/release gates and deployment at exact commit `ec594e0`. The unauthenticated demo returned HTTP 200 with the undeployed and exact-case-lock boundaries and no Google Fonts reference.

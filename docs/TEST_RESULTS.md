@@ -16,6 +16,6 @@
 | Cairo pure invariant tests under Foundry | 7 passed, 0 failed |
 | Starknet Foundry deployed-contract tests | 33 passed, 0 failed; 40 total with invariants |
 | Public Cairo CI | Pass; checksum-pinned workflow run `33533436640` reproduced build, 40 tests, artifact hashes and Sierra class hash |
-| Tracked-file secret scan | Pass across 102 tracked files, including the staged change set |
+| Tracked-file secret scan | Pass across 103 tracked files, including the offline font fallback |
 
 Pinned Scarb 2.20.1 formatted and built the contract locally; Starknet Foundry has no native Windows release, so official 0.63.0 Linux artifacts ran in an isolated Docker container. Public workflow `33533436640` independently repeated those gates on Linux using checksum-pinned official tool archives. Deployment tests cover program/case collisions, configuration, program binding, pool/admin authorization, clarification signatures and requests, payload bounds, event shape, case reserve locking, overcommit rejection, expiry release/reauthorize, paused withdrawal limited to available reserve, note return, wrong/zero nullifiers, tier/destination substitution and duplicate settlement. Live pool ABI behavior still requires a supported network deployment.
