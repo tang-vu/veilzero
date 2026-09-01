@@ -7,6 +7,7 @@ coverage/
 playwright-report/
 test-results/
 contracts/target/
+contracts/.snfoundry_cache/
 .tools/
 .env
 .env.*

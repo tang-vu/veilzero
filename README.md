@@ -18,7 +18,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Domain-separated case/report commitments | Implemented + unit tested | `VEILZERO_V1` domains |
 | Recovery-package export | Implemented | Read-only browser demo |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
-| Program, case and fixed-tier lifecycle | Implemented + Cairo build/test passing | `contracts/src/lib.cairo` |
+| Program, case and fixed-tier lifecycle | Implemented + 18 Cairo/Foundry tests passing | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented against starter ABI | Configured pool is caller, never the user |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
 | Wallet API submission | Deferred pending live ABI validation | Diagnostic is explicitly read-only; no fake success path |
@@ -91,7 +91,9 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm test:e2e
-cd contracts && scarb build && scarb test
+cd contracts && scarb build
+# Linux/WSL with Starknet Foundry 0.63.0:
+scarb test
 ```
 
 ## Current limitations

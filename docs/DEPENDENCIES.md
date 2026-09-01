@@ -9,9 +9,11 @@
 | types-js | 0.10.3 | Wallet API types | No |
 | Zod | 4.1.5 | Runtime bounds | Validates plaintext locally |
 | Cairo/Starknet | 2.18.0 | Contract | Public state only |
+| Starknet Foundry / `snforge_std` | 0.63.0, official foundry-rs release | Deployed-contract tests | Synthetic test state only |
+| Universal Sierra Compiler | 2.10.0, official Software Mansion release | Foundry Sierra execution | No |
 | STRK20 starter | commit 187fe789… | ABI/reference only | No |
 | starknet-privacy | commit 4db755b… / 0.14.3 RC line | Pool/ABI reference | SDK would handle viewing material; not wired |
 
 All JavaScript versions are exact. Lockfile integrity is mandatory.
 
-pnpm's local build-script allowlist contains only `unrs-resolver`, an ESLint resolver transitive dependency with prebuilt platform bindings. The GitHub Pages install disables all dependency lifecycle scripts; lint and build must still pass before deployment.
+pnpm explicitly denies the optional `unrs-resolver` build script; its pinned platform binary works without it. The GitHub Pages install disables all dependency lifecycle scripts; lint and build must still pass before deployment.

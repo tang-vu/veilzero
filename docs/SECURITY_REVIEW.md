@@ -11,6 +11,8 @@ Review opened 2026-09-01; unresolved findings are retained.
 | Duplicate settlement/nullifier reuse | Critical | Fixed in source | status 4→5 + used-nullifier map before approval |
 | Oversized/empty ciphertext | Medium | Fixed | 1..16384 contract bounds and tests |
 | Ambiguous transaction retry | High | Fixed in diagnostic model | Ambiguous state cannot resubmit |
+| Pool/admin caller confusion | Critical | Fixed + deployed-contract tested | `privacy_invoke` accepts only the pinned pool; lifecycle calls accept only program admin |
+| Duplicate settlement/nullifier misuse | Critical | Fixed + deployed-contract tested | State changes before external approval; wrong/repeated claims revert |
 | Plaintext logging/storage | High | No instance found | No logger/localStorage/backend; field cleared after encrypt |
 | XSS/URL injection | Medium | No dynamic HTML | React text escaping; fixed external URLs |
 | Dependency vulnerability | High | Fixed | Next 16.0.8 rejected; pinned 16.3.4; audit pending |

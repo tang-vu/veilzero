@@ -10,7 +10,8 @@
 | `pnpm audit --audit-level high` | No known vulnerabilities |
 | `strk20.json` structural validation | Pass; intentionally incomplete |
 | Scarb format/build | Pass |
-| Cairo tests | 7 passed, 0 failed |
+| Cairo pure invariant tests under Foundry | 7 passed, 0 failed |
+| Starknet Foundry deployed-contract tests | 11 passed, 0 failed; 18 total with invariants |
 | Assignment-like secret scan | No matches |
 
-Starknet Foundry is unavailable on native Windows in the inspected release assets. Scarb's bundled Cairo test runner is deprecated but passed; contract-level deployment tests remain required before any deployment.
+Starknet Foundry is unavailable on native Windows, so official 0.63.0 Linux artifacts ran in an isolated Docker container. Deployment tests cover program/case collisions, program binding, pool/admin authorization, payload bounds, reserve-backed note return, wrong nullifiers and duplicate settlement. Live pool ABI behavior still requires a supported network deployment.
