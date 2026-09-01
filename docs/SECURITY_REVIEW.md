@@ -6,13 +6,14 @@ Review opened 2026-09-01; unresolved findings are retained.
 |---|---|---|---|
 | Diagnostic package contains local key/secret | High operational | Open by design | Explicit warning, ignored filename, download only; replace with password-wrapped export |
 | Symmetric key was not vendor envelope encryption | High product | Fixed | Ephemeral X25519 + HKDF-SHA256 derives AES-GCM envelope keys; vendor decrypt round-trip and wrong-key tests pass |
-| Pool ABI mismatch (#978) | High | Blocked upstream validation | No deployment until class/ABI match |
+| Pool ABI mismatch (#978) | High | Current live path validated; recheck required | Block-pinned mainnet ABI exposes the legacy single-span return VeilZero implements; the upgradeable pool is re-probed before each gate |
 | `privacy_invoke` caller confusion | Critical | Fixed in source | Pin configured pool; vendor calls are separate |
 | Duplicate settlement/nullifier reuse | Critical | Fixed + deployed-contract tested | status 4→5 + used-nullifier map before approval |
 | Public raw claim nullifier allowed destination theft | Critical | Fixed + adversarially tested | Authorization stores only a secret commitment; claim requires case-key signature over destination note |
 | Wallet resolves destination note after action construction | High integration | Mitigated locally / live validation blocks deployment | Estimation-version-only zero-signature preview, contract-checked markers, case signing, note-drift abort and proof-completeness checks pass; validate with live Wallet API 0.10.3 |
 | Estimation preview accidentally submittable | Critical | Fixed + contract tested | Zero-signature preview requires exact Starknet estimation version `2^128 + 3`; canonical transaction version rejects it |
 | Stored case-auth commitment was unused | Critical | Fixed + adversarially tested | Clarifications verify Stark ECDSA over domain/program/case/message/size |
+| Private action calldata drift or incomplete wallet proof | High | Fixed locally / live validation pending | Submission and clarification builders map all eleven fields explicitly, zero unused fields, sign clarification context, and reject any empty proof component |
 | Oversized/empty ciphertext | Medium | Fixed | 1..16400 ciphertext-byte contract bounds (16 KiB UTF-8 plaintext plus GCM tag) and tests |
 | Ambiguous transaction retry | High | Fixed in diagnostic model | Ambiguous state cannot resubmit |
 | Plaintext logging/storage | High | No instance found | No logger/localStorage/backend; field cleared after encrypt |

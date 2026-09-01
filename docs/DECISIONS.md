@@ -63,3 +63,7 @@ Current official Wallet API guidance assigns viewing keys, note discovery and pr
 ## 2026-09-01 — Derive deployment through the canonical unique UDC path
 
 The release deployment uses Starknet.js's canonical UDC with `unique: true`, constructor calldata containing the freshly verified pool, and a deterministic Poseidon salt domain-separated by `VEILZERO_DEPLOY_V1`, class hash and pool. The expected address is additionally bound to the dedicated wallet's public deployer address. A read-only generator verifies artifact identity, pool compatibility, UDC presence and declaration state; its output is planning data and never deployment evidence.
+
+## 2026-09-01 — Prepare researcher case actions as explicit eleven-field invokes
+
+Submission and clarification use a single STRK20 invoke action and never synthesize a frontend success. The client maps every `privacy_invoke` field explicitly, zeros action-inapplicable fields, signs clarification context with the case key, requests a non-simulated proof, and fails closed if any proof component is absent. Actual `wallet_addInvokeTransaction` remains behind live-wallet validation and a human signature.

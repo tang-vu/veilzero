@@ -20,6 +20,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Recovery-package export | Implemented | Read-only browser demo |
 | Selective authorship proof | Implemented + unit tested | Case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
+| Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented + contract tested + live ABI probed | Single-span return matches official docs and observed mainnet pool v2.0 |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
@@ -58,7 +59,7 @@ The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted 
 
 VeilZero is a stateful anonymizer rather than a private-transfer skin. Its contract pins the pool as the only `privacy_invoke` caller, stores project-specific state, returns one `Span<OpenNoteDeposit>`, and enforces project state before the pool can create the reward note. The official helper documentation and a block-pinned read of the live mainnet pool v2.0 agree on that legacy surface. Upstream issue #978 remains an upgrade warning: current privacy-monorepo `main` has moved to a newer return shape, so VeilZero re-probes the upgradeable pool rather than assuming compatibility.
 
-The destination-bound claim preparation and its fail-closed invariants are documented in [docs/WALLET_CLAIM_ADAPTER.md](docs/WALLET_CLAIM_ADAPTER.md).
+Researcher submission/clarification preparation is documented in [docs/WALLET_CASE_ADAPTER.md](docs/WALLET_CASE_ADAPTER.md). The destination-bound claim preparation and its fail-closed invariants are documented in [docs/WALLET_CLAIM_ADAPTER.md](docs/WALLET_CLAIM_ADAPTER.md).
 
 ## Mainnet addresses and verified transactions
 
