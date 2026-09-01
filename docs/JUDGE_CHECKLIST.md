@@ -5,7 +5,7 @@
 - [x] Local encryption + no fake success state
 - [x] Pool-pinned project contract source
 - [x] Cairo build/test output recorded (7/7 on 2026-09-01)
-- [ ] Public demo from an unauthenticated session
+- [x] Public demo from an unauthenticated session
 - [ ] Three-minute public video
 - [ ] Mainnet contract verified
 - [ ] Three unique successful pool + project transactions
