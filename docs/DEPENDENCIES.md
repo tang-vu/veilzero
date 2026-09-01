@@ -13,3 +13,5 @@
 | starknet-privacy | commit 4db755b… / 0.14.3 RC line | Pool/ABI reference | SDK would handle viewing material; not wired |
 
 All JavaScript versions are exact. Lockfile integrity is mandatory.
+
+pnpm's build-script allowlist contains only `unrs-resolver`, an ESLint resolver transitive dependency that compiles/loads its platform binding. Other dependency lifecycle scripts remain denied by default.
