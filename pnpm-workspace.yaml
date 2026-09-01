@@ -4,6 +4,8 @@ nodeLinker: hoisted
 strictPeerDependencies: true
 onlyBuiltDependencies:
   - unrs-resolver
+allowBuilds:
+  unrs-resolver: false
 minimumReleaseAgeExclude:
   - '@next/env@16.3.4'
   - '@next/eslint-plugin-next@16.3.4'

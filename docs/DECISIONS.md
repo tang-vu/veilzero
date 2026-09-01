@@ -23,3 +23,7 @@ The starter-era 16.0.8 release emitted a security warning. VeilZero pins patched
 ## 2026-09-01 — Keep the public wallet diagnostic read-only
 
 The browser discovers Wallet Standard implementations and probes chain, API versions and STRK20 balance capability only after an explicit click. It does not prepare, sign or submit. Unknown wallet errors are redacted rather than rendering extension-provided messages.
+
+## 2026-09-01 — Deny the optional resolver build script
+
+The pinned `unrs-resolver` package works through its platform binary without running its install script. The pnpm allowlist records `false` explicitly so fresh installs neither execute the script nor stop on an unresolved approval prompt.
