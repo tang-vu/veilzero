@@ -14,7 +14,7 @@ Git: conventional commits, no force pushes, no rewritten evidence, no broken mai
 
 Tests: positive and negative protocol paths, encryption nonce uniqueness, no fake success, rejected/failed/ambiguous wallet states, replay/nullifier/cross-program defenses, builds from a clean clone.
 
-Current status: local app builds; TypeScript and browser tests pass; Cairo formats, builds and passes unit tests. Registration, public deployment, live ABI validation, Sepolia, mainnet and video remain. Known blocker: human wallet signatures for deployments/writes. Highest-value next task: publish and register, then finish Wallet API diagnostics against the verified live ABI.
+Current status: public repository, registration and GitHub Pages demo are live; TypeScript/browser/Cairo checks pass. Live ABI validation, Sepolia, mainnet and video remain. Known blocker: human wallet signatures for deployments/writes and an unverified official proving endpoint. Highest-value next task: finish Wallet API diagnostics against the verified live ABI.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

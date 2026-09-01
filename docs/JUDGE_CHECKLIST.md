@@ -1,6 +1,6 @@
 # Judge checklist
 
-- [ ] Public licensed repository and passing registration PR
+- [x] Public licensed repository and passing registration PR
 - [x] Judge-first README and visible privacy boundary
 - [x] Local encryption + no fake success state
 - [x] Pool-pinned project contract source
