@@ -20,5 +20,6 @@ Review opened 2026-09-01; unresolved findings are retained.
 | Ambiguous commitment serialization / envelope field substitution | High integrity | Fixed | SHA-256 commitment parts are length-framed and bind ciphertext, AEAD parameters, program binding, case/report commitments and case public key; substitution tests fail closed |
 | XSS/URL injection | Medium | No dynamic HTML | React text escaping; fixed external URLs |
 | Dependency vulnerability | High | Fixed | Next 16.0.8 rejected; pinned 16.3.4; `pnpm audit` reports no known vulnerabilities |
+| Mutable CI action tags / incomplete deploy gate | High supply chain | Fixed | Pages actions are pinned to resolved immutable commits; CI runs secret scan, `strk20.json` validation and dependency audit before artifact upload |
 
 The project has not received an independent audit.

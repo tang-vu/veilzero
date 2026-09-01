@@ -47,3 +47,7 @@ The contract stores ciphertext commitments and size, not report bytes. The MVP t
 ## 2026-09-01 — Resolve note binding with an estimation-only preview
 
 The adapter now performs an estimation prepare with a zero claim signature. The contract permits that signature only when the transaction version is Starknet's non-submittable estimation version (`2^128 + 3`) and requires fixed markers around the wallet-resolved note ID. The browser signs the extracted ID, prepares a real proof, and aborts if the marker is ambiguous, the note changes, or proof fields are empty. This keeps destination binding intact while retaining wallet-held STRK20 state. Live wallet/pool behavior remains a deployment gate.
+
+## 2026-09-01 — Pin public deployment actions
+
+Every external GitHub Action in the Pages workflow is pinned to the commit resolved from its documented major-version tag on this date. The deployment build also runs the tracked-file secret scanner, evidence-manifest validator and dependency audit before uploading the static artifact.
