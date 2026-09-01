@@ -99,3 +99,7 @@ A balance check alone could overpromise one reserve across multiple accepted cas
 ## 2026-09-01 — Return only paused, available reserve to the administrator
 
 Permanent custody of unused funds is not acceptable. After pausing a program, its administrator may withdraw an exact amount of available reserve back to the administrator account. Case-locked rewards are excluded from available reserve, and accounting is debited before the external ERC-20 transfer so reentrancy cannot expose the same balance twice.
+
+## 2026-09-01 — Run Cairo CI from checksum-pinned official binaries
+
+The current Foundry setup action is composite and references another action by a mutable major tag. Instead, public CI downloads the exact official Scarb 2.20.1, Foundry 0.63.0 and Universal Sierra Compiler 2.10.0 Linux assets and verifies their release SHA-256 digests before execution. CI then enforces formatting, build, all contract tests and release artifact identity.

@@ -1,0 +1,65 @@
+name: Cairo contract checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cairo-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install checksum-pinned Cairo toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          tools="$RUNNER_TEMP/veilzero-cairo-tools"
+          mkdir -p "$tools"
+
+          curl --fail --location --retry 3 --output "$tools/scarb.tar.gz" \
+            https://github.com/software-mansion/scarb/releases/download/v2.20.1/scarb-v2.20.1-x86_64-unknown-linux-gnu.tar.gz
+          echo "6795b268da13c8ff397a0f5e4b7a63f4b2b313d8a5e41fff36626087279c4804  $tools/scarb.tar.gz" | sha256sum --check
+
+          curl --fail --location --retry 3 --output "$tools/foundry.tar.gz" \
+            https://github.com/foundry-rs/starknet-foundry/releases/download/v0.63.0/starknet-foundry-v0.63.0-x86_64-unknown-linux-gnu.tar.gz
+          echo "a861c13238fe0686e921820b9606065cf07b1ccc6cc22d95cd299cd78b37a869  $tools/foundry.tar.gz" | sha256sum --check
+
+          curl --fail --location --retry 3 --output "$tools/usc.tar.gz" \
+            https://github.com/software-mansion/universal-sierra-compiler/releases/download/v2.10.0/universal-sierra-compiler-v2.10.0-x86_64-unknown-linux-gnu.tar.gz
+          echo "eafa433885c32947fbe640937a12543d468a0e2905b62c177f0fd8099285c1b9  $tools/usc.tar.gz" | sha256sum --check
+
+          tar --extract --gzip --file "$tools/scarb.tar.gz" --directory "$tools"
+          tar --extract --gzip --file "$tools/foundry.tar.gz" --directory "$tools"
+          tar --extract --gzip --file "$tools/usc.tar.gz" --directory "$tools"
+          echo "$tools/scarb-v2.20.1-x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+          echo "$tools/starknet-foundry-v0.63.0-x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+          echo "$tools/universal-sierra-compiler-v2.10.0-x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+      - name: Format, build and test Cairo
+        working-directory: contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          scarb --version
+          snforge --version
+          universal-sierra-compiler --version
+          scarb fmt --check
+          scarb build
+          snforge test
+      - name: Verify release artifact identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "b13014c00ee0e65831e50a2c46611c3f3d9e6ece41236117c7eef0bb1a2d852b  contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json" | sha256sum --check
+          echo "8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53  contracts/target/dev/veilzero_protocol_VeilZero.compiled_contract_class.json" | sha256sum --check
+          sncast utils class-hash \
+            --sierra-file contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json \
+            | grep --fixed-strings "0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56"
