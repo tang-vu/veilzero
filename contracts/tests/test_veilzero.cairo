@@ -20,6 +20,7 @@ trait IMockToken<TState> {
         ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256,
     ) -> bool;
     fn approve(ref self: TState, spender: ContractAddress, amount: u256) -> bool;
+    fn transfer(ref self: TState, recipient: ContractAddress, amount: u256) -> bool;
 }
 
 #[starknet::contract]
@@ -43,6 +44,11 @@ mod MockToken {
 
         fn approve(ref self: ContractState, spender: ContractAddress, amount: u256) -> bool {
             let _ = (spender, amount);
+            true
+        }
+
+        fn transfer(ref self: ContractState, recipient: ContractAddress, amount: u256) -> bool {
+            let _ = (recipient, amount);
             true
         }
     }
@@ -360,6 +366,50 @@ fn active_reward_lock_cannot_be_released() {
     dispatcher.decide(1, 7, true);
     dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
     dispatcher.release_expired_reward(1, 7);
+}
+
+#[test]
+fn paused_program_withdraws_only_available_reserve() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 3, make_claim_commitment(1, 7, 555), 1000);
+    assert(dispatcher.get_reserve(1) == 70, 'available after lock');
+    dispatcher.set_program_active(1, false);
+    dispatcher.withdraw_available_reserve(1, 70);
+    assert(dispatcher.get_reserve(1) == 0, 'available withdrawn');
+    assert(dispatcher.get_case(1, 7).reward_amount == 30, 'case lock protected');
+}
+
+#[test]
+#[should_panic(expected: 'PROGRAM_ACTIVE')]
+fn active_program_cannot_withdraw_reserve() {
+    let (dispatcher, contract_address, _, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    dispatcher.withdraw_available_reserve(1, 10);
+}
+
+#[test]
+#[should_panic(expected: 'INSUFFICIENT_RESERVE')]
+fn withdrawal_cannot_consume_case_locked_amount() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 30);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 3, make_claim_commitment(1, 7, 555), 1000);
+    dispatcher.set_program_active(1, false);
+    dispatcher.withdraw_available_reserve(1, 1);
 }
 
 #[test]

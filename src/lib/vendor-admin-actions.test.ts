@@ -8,6 +8,7 @@ import {
   buildRequestClarificationCall,
   buildReleaseExpiredRewardCall,
   buildSetProgramActiveCall,
+  buildWithdrawAvailableReserveCall,
 } from "./vendor-admin-actions";
 
 const target = { contract: "0x111", programId: "0x222", caseId: "0x333" };
@@ -48,6 +49,9 @@ describe("vendor administrator actions", () => {
       { contractAddress: "0x666", entrypoint: "approve", calldata: ["0x111", "0x3e8", "0x0"] },
       { contractAddress: "0x111", entrypoint: "fund_program", calldata: ["0x222", "0x3e8"] },
     ]);
+    expect(buildWithdrawAvailableReserveCall({ contract: "0x111", programId: "0x222", amount: "70" })).toEqual({
+      contractAddress: "0x111", entrypoint: "withdraw_available_reserve", calldata: ["0x222", "0x46"],
+    });
   });
 
   it("builds lifecycle calls without accepting arbitrary entrypoints", () => {

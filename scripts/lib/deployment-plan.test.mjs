@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildDeploymentPlan, deploymentSalt } from "./deployment-plan.mjs";
 
 const input = {
-  classHash: "0x02450ec72f2e622888a3ab378cf4978dcdd717f2e2365b6fea6e70e7f785d269",
-  compiledClassHash: "0x00008f826a0adefdf8e4455df7013d07fd12c3a63a77062cd5e52eb1b03fbfeb",
+  classHash: "0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56",
+  compiledClassHash: "0x0264bccfb4ff096e2de7b087ffec2a89fbd77c73ac360100bbe724a51cfabeed",
   poolAddress: "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a",
   deployerAddress: "0x123",
 };

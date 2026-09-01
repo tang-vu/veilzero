@@ -22,7 +22,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Selective authorship proof and local verifier | Implemented + unit/browser tested | Strict bounded import, case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
-| Vendor program and lifecycle call construction | Implemented + unit tested; live unverified | Bounded configuration, exact reserve approval, fixed entrypoints and expiry checks |
+| Vendor program, reserve and lifecycle calls | Implemented + unit tested; live unverified | Exact funding approval, case locks, paused available-reserve withdrawal, fixed entrypoints |
 | Reload-safe transaction reconciliation | Implemented + unit tested | Stores only public pending metadata; mismatches/timeouts remain ambiguous and block retry |
 | Shield/self-transfer/unshield diagnostic construction | Implemented + unit tested; submission disabled | Exact decimal conversion and fixed-value actions; `OPEN` is excluded |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |

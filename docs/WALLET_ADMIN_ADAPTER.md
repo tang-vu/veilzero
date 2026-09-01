@@ -4,6 +4,7 @@
 
 - create a program with bounded, strictly ordered configuration;
 - approve exactly the requested token amount and fund the contract reserve in one multicall;
+- withdraw only available reserve back to the administrator after pausing the program;
 - pause or resume a program;
 - acknowledge a case;
 - commit a clarification request;

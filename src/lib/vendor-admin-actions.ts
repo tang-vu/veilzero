@@ -68,6 +68,13 @@ export function buildFundProgramCalls(rawInput: z.input<typeof fundingInput>): C
   ];
 }
 
+export function buildWithdrawAvailableReserveCall(
+  rawInput: z.input<typeof contractTarget> & { programId: string; amount: string | bigint },
+): Call {
+  const input = contractTarget.extend({ programId: felt, amount: u128 }).parse(rawInput);
+  return call(input.contract, "withdraw_available_reserve", [input.programId, feltHex(input.amount)]);
+}
+
 export function buildSetProgramActiveCall(rawInput: z.input<typeof contractTarget> & { programId: string; active: boolean }): Call {
   const input = contractTarget.extend({ programId: felt, active: z.boolean() }).parse(rawInput);
   return call(input.contract, "set_program_active", [input.programId, input.active ? "0x1" : "0x0"]);

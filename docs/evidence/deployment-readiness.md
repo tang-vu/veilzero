@@ -6,7 +6,7 @@ It never asks for a private key, contacts a wallet, estimates a fee, signs, or s
 
 ## Latest diagnostic
 
-On 2026-09-01, the post-overcommit-fix release candidate was checked in a read-only run against Starknet mainnet block `14207687`, which observed:
+On 2026-09-01, the reserve-custody release candidate was checked in a read-only run against Starknet mainnet block `14208014`, which observed:
 
 - chain ID `SN_MAIN`;
 - compatible `legacy-global-screening` pool surface;

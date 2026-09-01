@@ -95,3 +95,7 @@ Mainnet verification requires a successful execution trace where the configured 
 ## 2026-09-01 — Lock reserve per case at reward authorization
 
 A balance check alone could overpromise one reserve across multiple accepted cases. Authorization now subtracts the exact fixed tier from available reserve and stores it as the case's immutable reward amount. Settlement consumes that lock without debiting again. Only the administrator, strictly after expiry, can release it back to available reserve and return the case to accepted state for a new authorization.
+
+## 2026-09-01 — Return only paused, available reserve to the administrator
+
+Permanent custody of unused funds is not acceptable. After pausing a program, its administrator may withdraw an exact amount of available reserve back to the administrator account. Case-locked rewards are excluded from available reserve, and accounting is debited before the external ERC-20 transfer so reentrancy cannot expose the same balance twice.

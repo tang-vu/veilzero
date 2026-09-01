@@ -44,6 +44,7 @@ pub trait IERC20<TState> {
         ref self: TState, sender: ContractAddress, recipient: ContractAddress, amount: u256,
     ) -> bool;
     fn approve(ref self: TState, spender: ContractAddress, amount: u256) -> bool;
+    fn transfer(ref self: TState, recipient: ContractAddress, amount: u256) -> bool;
 }
 
 #[starknet::interface]
@@ -61,6 +62,7 @@ pub trait IVeilZero<TState> {
         tier_3: u128,
     );
     fn fund_program(ref self: TState, program_id: felt252, amount: u128);
+    fn withdraw_available_reserve(ref self: TState, program_id: felt252, amount: u128);
     fn set_program_active(ref self: TState, program_id: felt252, active: bool);
     fn acknowledge(ref self: TState, program_id: felt252, case_id: felt252);
     fn request_clarification(
@@ -125,6 +127,7 @@ mod VeilZero {
         pub const ONLY_ADMIN: felt252 = 'ONLY_ADMIN';
         pub const PROGRAM_EXISTS: felt252 = 'PROGRAM_EXISTS';
         pub const PROGRAM_PAUSED: felt252 = 'PROGRAM_PAUSED';
+        pub const PROGRAM_ACTIVE: felt252 = 'PROGRAM_ACTIVE';
         pub const UNKNOWN_PROGRAM: felt252 = 'UNKNOWN_PROGRAM';
         pub const INVALID_CONFIG: felt252 = 'INVALID_CONFIG';
         pub const CASE_EXISTS: felt252 = 'CASE_EXISTS';
@@ -177,6 +180,7 @@ mod VeilZero {
     enum Event {
         ProgramCreated: ProgramCreated,
         ProgramFunded: ProgramFunded,
+        ProgramReserveWithdrawn: ProgramReserveWithdrawn,
         ProgramStatusChanged: ProgramStatusChanged,
         CaseSubmitted: CaseSubmitted,
         CaseStatusChanged: CaseStatusChanged,
@@ -206,6 +210,15 @@ mod VeilZero {
         program_id: felt252,
         amount: u128,
         reserve: u128,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct ProgramReserveWithdrawn {
+        #[key]
+        program_id: felt252,
+        #[key]
+        admin: ContractAddress,
+        amount: u128,
+        available_reserve: u128,
     }
     #[derive(Drop, starknet::Event)]
     struct ProgramStatusChanged {
@@ -363,6 +376,27 @@ mod VeilZero {
             let reserve = self.program_reserve.entry(program_id).read() + amount;
             self.program_reserve.entry(program_id).write(reserve);
             self.emit(ProgramFunded { program_id, amount, reserve });
+        }
+
+        fn withdraw_available_reserve(ref self: ContractState, program_id: felt252, amount: u128) {
+            assert_admin(@self, program_id);
+            assert(!self.program_active.entry(program_id).read(), errors::PROGRAM_ACTIVE);
+            assert(amount > 0, errors::INVALID_CONFIG);
+            let available_reserve = self.program_reserve.entry(program_id).read();
+            assert(available_reserve >= amount, errors::INSUFFICIENT_RESERVE);
+            let remaining = available_reserve - amount;
+            self.program_reserve.entry(program_id).write(remaining);
+            let admin = self.program_admin.entry(program_id).read();
+            let token = IERC20Dispatcher {
+                contract_address: self.program_token.entry(program_id).read(),
+            };
+            assert(token.transfer(admin, amount.into()), errors::TOKEN_TRANSFER_FAILED);
+            self
+                .emit(
+                    ProgramReserveWithdrawn {
+                        program_id, admin, amount, available_reserve: remaining,
+                    },
+                );
         }
 
         fn set_program_active(ref self: ContractState, program_id: felt252, active: bool) {
