@@ -1,5 +1,21 @@
 # Mainnet evidence plan
 
+```mermaid
+sequenceDiagram
+  participant H as Human browser wallet
+  participant P as Live STRK20 pool
+  participant V as Deployed VeilZero
+  participant R as Receipt verifier
+  H->>H: Re-probe ABI and estimate fee
+  H->>P: Sign qualifying private action
+  P->>V: privacy_invoke(action)
+  V-->>P: project event and optional open note
+  P-->>H: accepted transaction hash
+  R->>P: fetch receipt and historical trace
+  R->>V: verify event and resulting state
+  R-->>H: qualify only pool-ancestor + project path
+```
+
 | # | Action | Entrypoint | Expected state/event | Privacy and leakage | Qualification |
 |---|---|---|---|---|---|
 | 1 | Submit bounded encrypted case | `privacy_invoke` action 0 | status 1; `CaseSubmitted` | plaintext hidden; time, size, commitments public/correlatable | Pool and project path |

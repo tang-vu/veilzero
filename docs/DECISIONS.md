@@ -115,3 +115,7 @@ Judge-facing source contained five double-decoded punctuation sequences that bro
 ## 2026-09-02 — Expose only non-submitting diagnostic action previews
 
 The developer panel renders shield, private self-transfer and unshield action arrays only after a read-only wallet connection supplies the public account address. Preview construction is local and fixed-value; it does not prepare a proof, estimate, sign or submit. This makes the implemented Wallet API mapping inspectable without weakening the live-validation and human-mainnet gates.
+
+## 2026-09-02 — Validate local documentation links offline
+
+All tracked Markdown relative links are resolved from their source file, URL-decoded, constrained to the repository and checked for existence. External URLs remain a separate live release check so transient network failures cannot make source CI nondeterministic. Architecture documentation now explicitly includes system sequence, case lifecycle, trust-boundary and mainnet evidence-flow diagrams.

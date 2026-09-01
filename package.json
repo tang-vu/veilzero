@@ -22,7 +22,8 @@
     "probe:pool": "node scripts/probe-strk20-pool.mjs",
     "prepare:deployment": "node scripts/prepare-deployment.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
-    "scan:text": "node scripts/scan-text-encoding.mjs"
+    "scan:text": "node scripts/scan-text-encoding.mjs",
+    "verify:links": "node scripts/verify-local-links.mjs"
   },
   "dependencies": {
     "@starknet-io/get-starknet-discovery": "6.0.2",

@@ -21,3 +21,51 @@ sequenceDiagram
 ```
 
 No database or key-holding backend is used. Reward authorization moves the fixed tier from available program reserve into a case-scoped lock, preventing one balance from backing multiple promises; settlement consumes that lock, while only an expired lock can be returned for reauthorization. A paused program can return only its remaining available reserve to its administrator, never a case lock. Under the current official Wallet API route, the connected privacy wallet owns note discovery and proving; VeilZero neither configures a hosted prover/discovery endpoint nor receives those secrets. The claim adapter uses Wallet API 0.10.3 twice: a non-submittable estimation call resolves a marker-delimited open-note ID, the browser case key signs it, and a proof-producing preparation must resolve the identical ID. Empty proofs and drift abort before submission. Local client and contract tests pass; a live compatible wallet must still prove this behavior before submission is enabled.
+
+## Case lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> Submitted: private submit
+  Submitted --> Acknowledged: vendor acknowledges
+  Submitted --> Rejected: vendor rejects
+  Acknowledged --> Accepted: vendor accepts
+  Acknowledged --> Rejected: vendor rejects
+  Submitted --> Submitted: signed clarification
+  Acknowledged --> Acknowledged: signed clarification
+  Accepted --> RewardAuthorized: exact fixed tier locked
+  RewardAuthorized --> Settled: one-time private claim
+  RewardAuthorized --> Accepted: administrator releases expired lock
+  Rejected --> [*]
+  Settled --> [*]
+```
+
+## Trust boundaries
+
+```mermaid
+flowchart LR
+  subgraph B[Researcher browser — secret boundary]
+    PT[Report plaintext]
+    CS[Case secret and signing key]
+    ENC[Local encryption and commitments]
+    PT --> ENC
+    CS --> ENC
+  end
+  subgraph W[Connected wallet — proving boundary]
+    DISC[Note discovery]
+    PROOF[STRK20 proof preparation]
+  end
+  subgraph C[Public Starknet boundary]
+    POOL[STRK20 pool]
+    VZ[VeilZero contract]
+  end
+  subgraph A[Vendor browser — decryption boundary]
+    VK[Vendor X25519 private key]
+    DEC[Local report decryption]
+  end
+  ENC -->|commitments only| W
+  W --> POOL
+  POOL --> VZ
+  ENC -. encrypted envelope out of band .-> DEC
+  VK --> DEC
+```
