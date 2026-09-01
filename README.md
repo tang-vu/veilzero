@@ -14,11 +14,13 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 
 | Capability | State | Evidence |
 |---|---|---|
-| Local AES-256-GCM report encryption | Implemented + unit tested | `src/lib/case-crypto.ts` |
+| Vendor-readable X25519/HKDF/AES-GCM envelope encryption | Implemented + unit/browser tested | Keys and plaintext remain in-browser |
+| Shareable encrypted case envelope | Implemented + unit/browser tested | Public JSON excludes secrets; its ciphertext commitment is verified before decryption |
 | Domain-separated case/report commitments | Implemented + unit tested | `VEILZERO_V1` domains |
 | Recovery-package export | Implemented | Read-only browser demo |
+| Selective authorship proof | Implemented + unit tested | Case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
-| Program, case and fixed-tier lifecycle | Implemented + 18 Cairo/Foundry tests passing | `contracts/src/lib.cairo` |
+| Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented against starter ABI | Configured pool is caller, never the user |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
 | Wallet API submission | Deferred pending live ABI validation | Diagnostic is explicitly read-only; no fake success path |
@@ -46,7 +48,7 @@ flowchart LR
   R -. recovery package stays local .-> L[(Offline storage)]
 ```
 
-The vendor funds a bounded fixed-tier reserve. A researcher submits only commitments and bounded encrypted material through the pool. The vendor's public account acknowledges and decides. Acceptance authorizes one nullifier, tier and expiry. Claiming through `privacy_invoke` marks the nullifier used, debits reserve accounting, approves exactly the fixed tier, and returns one `OpenNoteDeposit` to the pool.
+The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted envelope out of band and submits its commitments, size, and a case-scoped Stark public key through the pool; ciphertext is not stored on Starknet. The vendor's public account acknowledges and decides. Acceptance stores a commitment to a one-time claim secret, tier and expiry—not the secret itself. A claim reveals that secret and a case-key signature bound to its destination note, preventing payout redirection even if calldata is copied. Successful settlement marks the nullifier used, debits reserve accounting, approves exactly the fixed tier, and returns one `OpenNoteDeposit` to the pool.
 
 ## STRK20 integration depth
 
@@ -72,7 +74,7 @@ VeilZero does **not** claim absolute anonymity, hidden deposits, hidden timing, 
 
 ## Threat model summary
 
-The contract defends against duplicate settlement, cross-program replay, reward-tier substitution, expired authorization, nullifier reuse, unauthorized lifecycle transitions, empty/oversized payloads, and treating the privacy pool caller as an authenticated end user. Remaining risks include calldata/metadata correlation, unaudited code, wallet/prover/discovery trust, sequencer ordering, vendor key compromise and recovery-package loss. See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+The contract defends against duplicate settlement, cross-program replay, reward-tier substitution, expired authorization, nullifier reuse, forged clarification, destination-note substitution, unauthorized lifecycle transitions, empty/oversized payloads, and treating the privacy pool caller as an authenticated end user. Remaining risks include calldata/metadata correlation, unaudited code, wallet/prover/discovery trust, sequencer ordering, vendor key compromise and recovery-package loss. See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
 ## Local setup
 
@@ -91,6 +93,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm test:e2e
+pnpm scan:secrets
 cd contracts && scarb build
 # Linux/WSL with Starknet Foundry 0.63.0:
 scarb test
@@ -98,9 +101,11 @@ scarb test
 
 ## Current limitations
 
-- The diagnostic demo uses a locally generated symmetric key. Vendor X25519 envelope encryption is next and is not claimed.
+- X25519 envelope encryption requires modern WebCrypto support; the no-program-key path remains a conspicuously local-only diagnostic fallback.
 - No hosted prover or discovery endpoint is configured or trusted.
+- The live Wallet API claim adapter is not implemented: `${openNoteIds[0]}` is wallet-resolved after action construction, while VeilZero requires the resolved note ID in the case-key signature. A secure prepare/sign/re-prepare flow must be validated against a compatible wallet; destination binding will not be weakened to bypass this.
 - No contract is deployed; no mainnet transaction or fee exists.
+- Ciphertext delivery is an out-of-band public-envelope file in this MVP. Availability and transport confidentiality are not provided by VeilZero.
 - Vendor lifecycle calls are public by design in the MVP.
 - The code is unaudited and unsuitable for material funds.
 

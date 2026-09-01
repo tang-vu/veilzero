@@ -4,7 +4,7 @@ pub const ACCEPTED: u8 = 3;
 pub const AUTHORIZED: u8 = 4;
 pub const SETTLED: u8 = 5;
 pub const REJECTED: u8 = 6;
-pub const MAX_PAYLOAD: u32 = 16384;
+pub const MAX_PAYLOAD: u32 = 16400;
 
 pub fn valid_transition(from: u8, to: u8) -> bool {
     (from == 0 && to == SUBMITTED)

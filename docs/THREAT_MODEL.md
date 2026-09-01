@@ -15,6 +15,6 @@ flowchart TD
   C --> N[IP/browser/wallet behavior]
 ```
 
-Controls: WebCrypto randomness, AES-GCM nonce uniqueness, domain separation, input bounds, program+case keying, pool pinning, ordered fixed tiers, reserve checks, authorization expiry, one-time nullifiers, terminal states, and honest failed/unknown UI states.
+Controls: WebCrypto randomness, ephemeral X25519/HKDF envelope keys, AES-GCM nonce uniqueness and authenticated context, Stark signatures for case follow-ups and claim destinations, domain-separated Poseidon commitments, input bounds, program+case keying, pool pinning, ordered fixed tiers, reserve checks, authorization expiry, one-time nullifiers, terminal states, and honest failed/unknown UI states.
 
-Open risks: unaudited Cairo/TypeScript, diagnostic symmetric key not vendor envelope encryption, no verified live prover/discovery endpoint, no deployed ABI validation, ciphertext availability design, browser compromise and metadata correlation.
+Open risks: unaudited Cairo/TypeScript, vendor or recovery-key compromise, no verified live prover/discovery endpoint, no deployed ABI validation, out-of-band ciphertext availability and transport metadata, browser compromise, public claim calldata after execution, and metadata correlation. Copying a valid claim cannot redirect its destination because the destination note is signed; it can still race the original and create an ambiguous receipt that must be reconciled. Constructing that signature through Wallet API 0.10.3 remains deployment-blocking until a compatible wallet validates note-ID stability across prepare/sign/re-prepare.

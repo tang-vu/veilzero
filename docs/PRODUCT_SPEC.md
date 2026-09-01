@@ -1,7 +1,7 @@
 # Product specification
 
-VeilZero serves security programs and pseudonymous researchers. The MVP supports one vendor-created program, bounded encrypted case commitments, acknowledgement, accept/reject, a fixed-tier reserve-backed authorization, pool-mediated settlement and narrow evidence export.
+VeilZero serves security programs and pseudonymous researchers. The MVP supports one vendor-created program, a shareable vendor-encrypted case envelope with bounded on-chain commitments, acknowledgement, accept/reject, a fixed-tier reserve-backed authorization, pool-mediated settlement and narrow evidence export. Ciphertext transport is out of band in this MVP; Starknet stores its hash and size, not the ciphertext.
 
-States: absent → submitted → acknowledged → accepted or rejected → reward authorized → settled. Rejected and settled are terminal. Submission binds program, case, report, ciphertext and case-auth commitments. Authorization binds program, case, fixed tier, nullifier and expiry.
+States: absent → submitted → acknowledged → accepted or rejected → reward authorized → settled. Rejected and settled are terminal. Submission binds program, case, report, ciphertext and a case-scoped Stark public key. The vendor administrator can commit a clarification request while a case is submitted or acknowledged; researcher clarifications require signatures over the program, case, message commitments and payload size. Authorization binds program, case, fixed tier, a commitment to a one-time claim secret and expiry. Claiming proves the secret and signs the destination note, so copied calldata cannot redirect the reward.
 
 Success means a judge can create/read a program, encrypt locally, observe honest receipt state, inspect the on-chain contract, and verify pool plus project-contract involvement. A frontend animation is never evidence.

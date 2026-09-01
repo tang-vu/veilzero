@@ -18,6 +18,8 @@ contracts/.snfoundry_cache/
 *.proof.json
 *.viewing-key*
 veilzero-recovery-*.json
+veilzero-vendor-key-*.json
+veilzero-case-envelope-*.json
 prover-jobs/
 proof-blobs/
 request-payloads/

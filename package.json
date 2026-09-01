@@ -17,7 +17,8 @@
     "test:e2e": "playwright test",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "verify:strk20": "node scripts/verify-strk20-json.mjs",
-    "verify:evidence": "node scripts/verify-mainnet-evidence.mjs"
+    "verify:evidence": "node scripts/verify-mainnet-evidence.mjs",
+    "scan:secrets": "node scripts/scan-secrets.mjs"
   },
   "dependencies": {
     "@starknet-io/get-starknet-discovery": "6.0.2",
