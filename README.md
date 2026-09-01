@@ -22,7 +22,8 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Selective authorship proof and local verifier | Implemented + unit/browser tested | Strict bounded import, case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
-| Vendor program, reserve and lifecycle calls | Implemented + unit tested; live unverified | Exact funding approval, case locks, paused available-reserve withdrawal, fixed entrypoints |
+| Case-signed reward authorization request | Implemented + unit/browser/contract tested | Secret-free artifact; vendor substitution and cross-program replay fail on-chain |
+| Vendor program, reserve and lifecycle calls | Implemented + unit/browser tested; live unverified | Exact funding approval, verified request signature, case locks, paused available-reserve withdrawal, fixed entrypoints |
 | Reload-safe transaction reconciliation | Implemented + unit tested | Stores only public pending metadata; mismatches/timeouts remain ambiguous and block retry |
 | Shield/self-transfer/unshield diagnostic construction | Implemented + unit/browser tested; submission disabled | Connected-account-bound UI previews exact fixed-value actions; `OPEN` is excluded |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
@@ -40,7 +41,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 1. Open the privacy boundary and program policy.
 2. Enter a report; observe that encryption happens locally and plaintext disappears.
 3. Export the case recovery receipt.
-4. Show the Cairo state machine: submit, acknowledge, accept, authorize, settle.
+4. Export and verify the case-signed reward request; preview acknowledge, accept/reject, and authorization calls without signing.
 5. Once deployed, execute submission, follow-up and settlement through STRK20.
 6. Verify pool and VeilZero involvement from transaction receipts.
 
@@ -57,13 +58,14 @@ flowchart LR
   R -. recovery package stays local .-> L[(Offline storage)]
 ```
 
-The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted envelope out of band and submits its commitments, size, and a case-scoped Stark public key through the pool; ciphertext is not stored on Starknet. The vendor's public account acknowledges and decides. Authorization stores a commitment to a one-time claim secret, locks that case's fixed tier from available reserve, and records expiry—not the secret itself. The administrator can release the lock only after expiry. A claim reveals the secret and a case-key signature bound to its destination note, preventing payout redirection even if calldata is copied. Successful settlement marks the nullifier used, spends the case lock, approves exactly that amount, and returns one `OpenNoteDeposit` to the pool.
+The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted envelope out of band and submits its commitments, size, and a case-scoped Stark public key through the pool; ciphertext is not stored on Starknet. The vendor's public account acknowledges and decides. The researcher exports a secret-free, case-signed reward request; Cairo verifies that signature before authorization can store the one-time claim-secret commitment, lock the fixed tier, and record expiry—not the secret itself. The administrator can release the lock only after expiry. A claim reveals the secret and a case-key signature bound to its destination note, preventing payout redirection even if calldata is copied. Successful settlement marks the nullifier used, spends the case lock, approves exactly that amount, and returns one `OpenNoteDeposit` to the pool.
 
 ## STRK20 integration depth
 
 VeilZero is a stateful anonymizer rather than a private-transfer skin. Its contract pins the pool as the only `privacy_invoke` caller, stores project-specific state, returns one `Span<OpenNoteDeposit>`, and enforces project state before the pool can create the reward note. The official helper documentation and a block-pinned read of the live mainnet pool v2.0 agree on that legacy surface. Upstream issue #978 remains an upgrade warning: current privacy-monorepo `main` has moved to a newer return shape, so VeilZero re-probes the upgradeable pool rather than assuming compatibility.
 
 Researcher submission/clarification preparation is documented in [docs/WALLET_CASE_ADAPTER.md](docs/WALLET_CASE_ADAPTER.md), and vendor public calls in [docs/WALLET_ADMIN_ADAPTER.md](docs/WALLET_ADMIN_ADAPTER.md). The destination-bound claim preparation and its fail-closed invariants are documented in [docs/WALLET_CLAIM_ADAPTER.md](docs/WALLET_CLAIM_ADAPTER.md).
+The selective, case-signed handoff into vendor authorization is documented in [docs/REWARD_AUTHORIZATION_REQUEST.md](docs/REWARD_AUTHORIZATION_REQUEST.md).
 
 ## Mainnet addresses and verified transactions
 
@@ -85,7 +87,7 @@ VeilZero does **not** claim absolute anonymity, hidden deposits, hidden timing, 
 
 ## Threat model summary
 
-The contract defends against duplicate settlement, cross-program replay, reward-tier substitution, expired authorization, nullifier reuse, forged clarification, destination-note substitution, unauthorized lifecycle transitions, empty/oversized payloads, and treating the privacy pool caller as an authenticated end user. Remaining risks include calldata/metadata correlation, unaudited code, wallet/prover/discovery trust, sequencer ordering, vendor key compromise and recovery-package loss. See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+The contract defends against duplicate settlement, cross-program replay, vendor claim-commitment substitution, reward-tier substitution, expired authorization, nullifier reuse, forged clarification, destination-note substitution, unauthorized lifecycle transitions, empty/oversized payloads, and treating the privacy pool caller as an authenticated end user. Remaining risks include calldata/metadata correlation, unaudited code, wallet/prover/discovery trust, sequencer ordering, vendor key compromise and recovery-package loss. See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
 
 ## Local setup
 
@@ -124,7 +126,7 @@ cd contracts && scarb test
 
 ## OSS reuse surface
 
-The Cairo reserve/settlement anonymizer, explicit privacy-boundary model, evidence verifier, domain-separated case package, and deadline-bound disclosure state machine are intended as reusable components for security programs.
+The Cairo reserve/settlement anonymizer, signed reward-request artifact, explicit privacy-boundary model, evidence verifier, domain-separated case package, and deadline-bound disclosure state machine are intended as reusable components for security programs.
 
 ## Roadmap
 

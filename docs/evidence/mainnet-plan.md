@@ -24,6 +24,6 @@ sequenceDiagram
 
 For each action, the human wallet, token amount, live network estimate, live pool fee, contract address, calldata, expected event, recovery and reconciliation command must be filled immediately before signing. No placeholder hash enters `strk20.json`.
 
-Precondition for action 3: live-validate `prepareDestinationBoundClaim` as described in `docs/MAINNET_RUNBOOK.md`. Do not attempt mainnet settlement until the selected wallet proves marker visibility, stable prepare/sign/re-prepare note binding and non-empty proof output.
+Preconditions for action 3: authorize from a request whose case signature passes both the browser verifier and the deployed contract, then live-validate `prepareDestinationBoundClaim` as described in `docs/MAINNET_RUNBOOK.md`. Do not attempt mainnet settlement until the selected wallet proves marker visibility, stable prepare/sign/re-prepare note binding and non-empty proof output.
 
 The verifier additionally requires `VEILZERO_PROGRAM_ID` and `VEILZERO_CASE_ID`; it checks each receipt at its historical block for the expected event and case status. It also requires a successful transaction trace in which the configured live pool is an ancestor of a declared VeilZero contract call. A pool event, unrelated sibling calls, or generic contract involvement is insufficient.

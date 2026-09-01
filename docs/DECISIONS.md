@@ -119,3 +119,7 @@ The developer panel renders shield, private self-transfer and unshield action ar
 ## 2026-09-02 — Validate local documentation links offline
 
 All tracked Markdown relative links are resolved from their source file, URL-decoded, constrained to the repository and checked for existence. External URLs remain a separate live release check so transient network failures cannot make source CI nondeterministic. Architecture documentation now explicitly includes system sequence, case lifecycle, trust-boundary and mainnet evidence-flow diagrams.
+
+## 2026-09-02 — Enforce researcher-signed reward authorization on-chain
+
+A vendor-selected claim commitment could make an accepted reward unclaimable even if the UI validated an off-chain artifact. The researcher now exports a strict secret-free request signed by the submitted case key over domain, program, case, and claim commitment. `authorize_reward` accepts that signature and Cairo verifies it before any reserve mutation. Tests reject commitment substitution, signer mismatch, unknown fields, and cross-program replay; tier and expiry remain explicit vendor policy choices.

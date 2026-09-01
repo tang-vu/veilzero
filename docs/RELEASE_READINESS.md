@@ -73,3 +73,13 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - Generated `next-env.d.ts` was the only tracked dirty file after Next development/build commands; it contained the known generated dev-path switch and no required source. The ignored Cairo target was intentionally absent from the clone, so artifact identity remains verified by the exact-commit checksum-pinned Cairo workflow rather than by pretending generated artifacts ship in Git.
 - Public Cairo workflow `33537038038` independently rebuilt the unchanged contract and passed all 40 tests plus artifact identity at exact commit `ec594e0`.
 - Pages workflow `33537038062` completed a fresh frozen/script-disabled Linux install, all configured application/release gates and deployment at exact commit `ec594e0`. The unauthenticated demo returned HTTP 200 with the undeployed and exact-case-lock boundaries and no Google Fonts reference.
+
+## Case-signed reward authorization release candidate — 2026-09-02
+
+- Exact contract-bearing source commit: `8de77540320b99dea5dfafdc65dad03355c453fd`.
+- A strict public reward request now signs the claim commitment under the submitted case key without exporting the claim secret or any private key. Vendor import binds it to the active manifest and encrypted case before constructing calls.
+- Cairo `authorize_reward` independently verifies the request signature before reserve mutation. New deployed-contract tests reject vendor commitment substitution and cross-program replay.
+- Pinned Scarb 2.20.1 formatting/build passed. Foundry 0.63.0 ran 35 deployed-contract and 7 pure tests: 42 passed, 0 failed. Vitest passed 66 tests and Playwright passed 3 end-to-end flows.
+- Sierra SHA-256/class hash: `fd033dfe84634a1c46e6854ade449e5fbaf67f64a79409539cbc1c1819622ca8` / `0x01c4ddb21597feb40ad7d51da6749c1b8cd6b52b84b7ffe13ae4da9619920503`.
+- CASM SHA-256/class hash: `816fc781916a10d441c01fc2f90e2854f55cc94a0201bad982fd2c6d98afcbe9` / `0x006bea38144dd691e99894a0f603823c29f33d3c4013abecd2999c67a2391b78`.
+- Starknet.js and Starknet Foundry 0.63.0 `sncast` independently produced the same Sierra class hash. The new class is not declared or deployed; live declaration state must be rechecked with the dedicated wallet address before signing.
