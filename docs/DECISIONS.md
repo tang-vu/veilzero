@@ -107,3 +107,7 @@ The current Foundry setup action is composite and references another action by a
 ## 2026-09-02 — Remove runtime font-network dependency
 
 The application uses system font stacks instead of `next/font/google`. A clean-clone browser run showed that an unavailable Google Fonts endpoint could delay the development server even though fonts are nonessential. System fallbacks keep the judge path self-contained, avoid a third-party request and remove that metadata leak; Playwright allows 120 seconds for first compilation on slow filesystems.
+
+## 2026-09-02 — Fail CI on common text-encoding corruption
+
+Judge-facing source contained five double-decoded punctuation sequences that browser tests had accidentally learned as expected output. The corrected strings use proper UTF-8. A tracked-file scanner now rejects the Unicode replacement character and common UTF-8-as-Windows-1252 signatures in every non-binary tracked file, and Pages CI enforces it.

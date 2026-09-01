@@ -165,7 +165,7 @@ export default function Home() {
 
   async function importAuthorshipEvidence(file: File | undefined) {
     if (!file) return;
-    setEvidenceStatus("Checking proofâ€¦");
+    setEvidenceStatus("Checking proof…");
     try {
       if (file.size > 32 * 1024) throw new Error("oversized");
       const valid = verifyAuthorshipEvidence(JSON.parse(await file.text()));
@@ -199,7 +199,7 @@ export default function Home() {
           <label htmlFor="program-policy">Disclosure policy <small>Committed publicly; do not include report details</small></label>
           <textarea id="program-policy" value={programPolicy} minLength={20} maxLength={4096} onChange={(event) => setProgramPolicy(event.target.value)} />
           <label htmlFor="program-token">Reward token address</label>
-          <input id="program-token" value={programToken} placeholder="0xâ€¦" autoComplete="off" onChange={(event) => setProgramToken(event.target.value)} />
+          <input id="program-token" value={programToken} placeholder="0x…" autoComplete="off" onChange={(event) => setProgramToken(event.target.value)} />
           <label htmlFor="ack-sla">Acknowledgement SLA <small>hours</small></label>
           <input id="ack-sla" type="number" min="1" step="1" value={acknowledgementHours} onChange={(event) => setAcknowledgementHours(event.target.value)} />
           <label htmlFor="remediation-sla">Remediation SLA <small>days</small></label>
@@ -213,9 +213,9 @@ export default function Home() {
             <button className="button" disabled={!programManifest} onClick={() => programManifest && downloadJson(programManifest, `veilzero-program-${programManifest.programId.slice(2, 14)}.json`)}>Download public manifest</button>
           </div>
           <dl>
-            <div><dt>Program ID</dt><dd className="mono">{programManifest?.programId ?? "â€”"}</dd></div>
-            <div><dt>Encryption key commitment</dt><dd className="mono">{programManifest?.encryptionKeyCommitment ?? "â€”"}</dd></div>
-            <div><dt>Policy commitment</dt><dd className="mono">{programManifest?.policyCommitment ?? "â€”"}</dd></div>
+            <div><dt>Program ID</dt><dd className="mono">{programManifest?.programId ?? "—"}</dd></div>
+            <div><dt>Encryption key commitment</dt><dd className="mono">{programManifest?.encryptionKeyCommitment ?? "—"}</dd></div>
+            <div><dt>Policy commitment</dt><dd className="mono">{programManifest?.policyCommitment ?? "—"}</dd></div>
           </dl>
           <p className="warning">The vendor key package decrypts every report for this program. Store it offline; never commit or share it.</p>
         </div>

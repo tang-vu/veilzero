@@ -28,7 +28,7 @@ test("binds a public vendor manifest without exposing the private key", async ({
   await page.getByLabel("Reward token address").fill("0x456");
   await page.getByRole("button", { name: "Bind public program manifest" }).click();
   await expect(page.getByRole("button", { name: "Download public manifest" })).toBeEnabled();
-  await expect(page.locator("dt", { hasText: "Program ID" }).locator("xpath=following-sibling::dd")).not.toHaveText("â€”");
+  await expect(page.locator("dt", { hasText: "Program ID" }).locator("xpath=following-sibling::dd")).not.toHaveText("—");
   await expect(page.getByText(/privateKey/i)).toHaveCount(0);
   await expect(page.getByText(/claimSecret/i)).toHaveCount(0);
 });
