@@ -58,8 +58,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "b13014c00ee0e65831e50a2c46611c3f3d9e6ece41236117c7eef0bb1a2d852b  contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json" | sha256sum --check
-          echo "8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53  contracts/target/dev/veilzero_protocol_VeilZero.compiled_contract_class.json" | sha256sum --check
+          echo "fd033dfe84634a1c46e6854ade449e5fbaf67f64a79409539cbc1c1819622ca8  contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json" | sha256sum --check
+          echo "816fc781916a10d441c01fc2f90e2854f55cc94a0201bad982fd2c6d98afcbe9  contracts/target/dev/veilzero_protocol_VeilZero.compiled_contract_class.json" | sha256sum --check
           sncast utils class-hash \
             --sierra-file contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json \
-            | grep --fixed-strings "0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56"
+            | grep --fixed-strings "0x01c4ddb21597feb40ad7d51da6749c1b8cd6b52b84b7ffe13ae4da9619920503"

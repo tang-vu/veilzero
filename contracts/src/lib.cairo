@@ -76,6 +76,8 @@ pub trait IVeilZero<TState> {
         tier: u8,
         claim_commitment: felt252,
         expiry: u64,
+        request_sig_r: felt252,
+        request_sig_s: felt252,
     );
     fn release_expired_reward(ref self: TState, program_id: felt252, case_id: felt252);
     fn privacy_invoke(
@@ -117,6 +119,7 @@ mod VeilZero {
     const CLARIFY_DOMAIN: felt252 = 'VZ_CLARIFY_V1';
     const CLAIM_AUTH_DOMAIN: felt252 = 'VZ_CLAIM_AUTH_V1';
     const CLAIM_MESSAGE_DOMAIN: felt252 = 'VZ_CLAIM_MSG_V1';
+    const REWARD_REQUEST_DOMAIN: felt252 = 'VZ_REWARD_REQ_V1';
     const CASE_KEY_DOMAIN: felt252 = 'VZ_CASE_KEY_V1';
     const NOTE_MARKER_BEFORE: felt252 = 'VZ_NOTE_BEGIN_V1';
     const NOTE_MARKER_AFTER: felt252 = 'VZ_NOTE_END_V1';
@@ -458,6 +461,8 @@ mod VeilZero {
             tier: u8,
             claim_commitment: felt252,
             expiry: u64,
+            request_sig_r: felt252,
+            request_sig_s: felt252,
         ) {
             assert_admin(@self, program_id);
             let key = case_key(program_id, case_id);
@@ -466,6 +471,18 @@ mod VeilZero {
             assert(amount > 0, errors::BAD_TIER);
             assert(claim_commitment != 0, errors::BAD_CLAIM);
             assert(expiry > get_block_timestamp(), errors::AUTH_EXPIRED);
+            let request_hash = poseidon_hash_span(
+                array![REWARD_REQUEST_DOMAIN, program_id, case_id, claim_commitment].span(),
+            );
+            assert(
+                check_ecdsa_signature(
+                    request_hash,
+                    self.case_auth_pubkey.entry(key).read(),
+                    request_sig_r,
+                    request_sig_s,
+                ),
+                errors::BAD_SIGNATURE,
+            );
             let available_reserve = self.program_reserve.entry(program_id).read();
             assert(available_reserve >= amount, errors::INSUFFICIENT_RESERVE);
             self.program_reserve.entry(program_id).write(available_reserve - amount);

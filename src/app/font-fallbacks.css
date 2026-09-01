@@ -15,3 +15,24 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.receiptPanel > label {
+  display: block;
+  margin: 1rem 0 0.4rem;
+  font: 500 11px var(--font-mono);
+}
+
+.receiptPanel > input,
+.receiptPanel > select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: 12px var(--font-mono);
+}
+
+.receiptPanel > .button {
+  margin-top: 1rem;
+  margin-right: 0.5rem;
+}

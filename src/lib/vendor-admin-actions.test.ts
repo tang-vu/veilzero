@@ -62,13 +62,15 @@ describe("vendor administrator actions", () => {
   });
 
   it("binds reward authorization and rejects stale expiry or invalid tiers", () => {
-    expect(buildAuthorizeRewardCall({ ...target, tier: 2, claimCommitment: "0x888", expiry: "2000" }, 1000n)).toEqual({
+    const requestSignature = { r: "0xaaa", s: "0xbbb" };
+    expect(buildAuthorizeRewardCall({ ...target, tier: 2, claimCommitment: "0x888", expiry: "2000", requestSignature }, 1000n)).toEqual({
       contractAddress: "0x111",
       entrypoint: "authorize_reward",
-      calldata: ["0x222", "0x333", "0x2", "0x888", "0x7d0"],
+      calldata: ["0x222", "0x333", "0x2", "0x888", "0x7d0", "0xaaa", "0xbbb"],
     });
-    expect(() => buildAuthorizeRewardCall({ ...target, tier: 2, claimCommitment: "0x888", expiry: "1000" }, 1000n)).toThrow("current block timestamp");
-    expect(() => buildAuthorizeRewardCall({ ...target, tier: 4 as 3, claimCommitment: "0x888", expiry: "2000" }, 1000n)).toThrow();
+    expect(() => buildAuthorizeRewardCall({ ...target, tier: 2, claimCommitment: "0x888", expiry: "1000", requestSignature }, 1000n)).toThrow("current block timestamp");
+    expect(() => buildAuthorizeRewardCall({ ...target, tier: 4 as 3, claimCommitment: "0x888", expiry: "2000", requestSignature }, 1000n)).toThrow();
+    expect(() => buildAuthorizeRewardCall({ ...target, tier: 2, claimCommitment: "0x888", expiry: "2000", requestSignature: { ...requestSignature, r: "0x0" } }, 1000n)).toThrow();
     expect(buildReleaseExpiredRewardCall(target)).toEqual({
       contractAddress: "0x111", entrypoint: "release_expired_reward", calldata: ["0x222", "0x333"],
     });

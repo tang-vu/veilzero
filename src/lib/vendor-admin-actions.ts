@@ -38,7 +38,12 @@ const programInput = contractTarget.extend({
 });
 const fundingInput = contractTarget.extend({ programId: felt, token: felt, amount: u128 });
 const clarificationRequest = caseTarget.extend({ requestCommitment: felt });
-const authorizationInput = caseTarget.extend({ tier: z.union([z.literal(1), z.literal(2), z.literal(3)]), claimCommitment: felt, expiry: u64 });
+const authorizationInput = caseTarget.extend({
+  tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  claimCommitment: felt,
+  expiry: u64,
+  requestSignature: z.object({ r: felt, s: felt }).strict(),
+});
 
 function feltHex(value: bigint): string { return num.toHex(value); }
 function call(contractAddress: string, entrypoint: string, calldata: string[]): Call {
@@ -106,6 +111,8 @@ export function buildAuthorizeRewardCall(rawInput: z.input<typeof authorizationI
     feltHex(BigInt(input.tier)),
     input.claimCommitment,
     feltHex(input.expiry),
+    input.requestSignature.r,
+    input.requestSignature.s,
   ]);
 }
 

@@ -15,8 +15,9 @@ const clarification = z.object({
 });
 
 const claim = z.object({ programId: felt, caseId: felt, claimSecret: felt, noteId: felt });
+const rewardRequest = z.object({ programId: felt, caseId: felt, claimCommitment: felt });
 
-function poseidon(domain: "VZ_CLARIFY_V1" | "VZ_CLAIM_AUTH_V1" | "VZ_CLAIM_MSG_V1", values: string[]) {
+function poseidon(domain: "VZ_CLARIFY_V1" | "VZ_CLAIM_AUTH_V1" | "VZ_CLAIM_MSG_V1" | "VZ_REWARD_REQ_V1", values: string[]) {
   return hash.computePoseidonHashOnElements([shortString.encodeShortString(domain), ...values]);
 }
 
@@ -51,6 +52,21 @@ export function claimAuthorizationCommitment(raw: Omit<z.input<typeof claim>, "n
 export function claimMessageHash(raw: z.input<typeof claim>): string {
   const input = claim.parse(raw);
   return poseidon("VZ_CLAIM_MSG_V1", [input.programId, input.caseId, input.claimSecret, input.noteId]);
+}
+
+export function rewardAuthorizationRequestMessageHash(raw: z.input<typeof rewardRequest>): string {
+  const input = rewardRequest.parse(raw);
+  return poseidon("VZ_REWARD_REQ_V1", [input.programId, input.caseId, input.claimCommitment]);
+}
+
+export function signRewardAuthorizationRequest(
+  input: z.input<typeof rewardRequest>,
+  caseSigningPrivateKey: string,
+): ProtocolSignature {
+  felt.parse(caseSigningPrivateKey);
+  const messageHash = rewardAuthorizationRequestMessageHash(input);
+  const signature = ec.starkCurve.sign(messageHash, caseSigningPrivateKey);
+  return { r: num.toHex(signature.r), s: num.toHex(signature.s), messageHash };
 }
 
 export function signClaim(

@@ -23,6 +23,8 @@ import {
   parseTokenAmount,
 } from "@/lib/strk20-diagnostic-actions";
 import { classifyChainId, safeWalletError } from "@/lib/wallet-diagnostics";
+import { createRewardAuthorizationRequest } from "@/lib/reward-authorization-request";
+import { VendorTransactionPreview } from "./vendor-transaction-preview";
 
 const phases = ["Submitted", "Acknowledged", "Accepted", "Reward authorized", "Settled"] as const;
 
@@ -137,6 +139,16 @@ export default function Home() {
     if (!casePackage) return;
     const proof = createAuthorshipEvidence(casePackage, `VeilZero public authorship receipt ${casePackage.caseCommitment}`);
     downloadJson(proof, `veilzero-authorship-${casePackage.caseCommitment.slice(0, 12)}.json`);
+  }
+
+  function downloadRewardAuthorizationRequest() {
+    if (!casePackage || !programManifest) return;
+    try {
+      const request = createRewardAuthorizationRequest(programManifest, casePackage);
+      downloadJson(request, `veilzero-reward-request-${request.caseId.slice(2, 14)}.json`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Reward request creation failed safely.");
+    }
   }
 
   async function generateVendorKeys() {
@@ -284,6 +296,7 @@ export default function Home() {
           <button className="button" disabled={!casePackage} onClick={downloadRecovery}>Export recovery package</button>
           <button className="button" disabled={!casePackage || casePackage.algorithm !== "X25519-HKDF-SHA256+A256GCM"} onClick={downloadPublicEnvelope}>Export encrypted case</button>
           <button className="button" disabled={!casePackage} onClick={downloadAuthorshipEvidence}>Export public authorship proof</button>
+          <button className="button" disabled={!casePackage || !programManifest} onClick={downloadRewardAuthorizationRequest}>Export signed reward request</button>
           <p className="warning">The recovery package contains secret material. Store it offline; never send it to the vendor or commit it.</p>
         </aside>
       </section>
@@ -292,6 +305,11 @@ export default function Home() {
         <p className="eyebrow">ON-CHAIN CASE LIFECYCLE</p><h2>Commitments force the process into daylight.<br />The report stays in the dark.</h2>
         <div className="steps">{phases.map((phase, index) => <div className={index === 0 ? "step active" : "step"} key={phase}><span>0{index + 1}</span><strong>{phase}</strong><small>{index === 0 ? "Report + ciphertext commitments" : index === 1 ? "Acknowledgement clock stops" : index === 2 ? "Fixed reward tier is selected" : index === 3 ? "Exact tier locked to this case" : "One-time nullifier + shielded note"}</small></div>)}</div>
       </section>
+
+      <VendorTransactionPreview
+        program={programManifest}
+        caseEnvelope={importedEnvelope ?? (casePackage?.algorithm === "X25519-HKDF-SHA256+A256GCM" ? toPublicCaseEnvelope(casePackage) : null)}
+      />
 
       <section className="boundary" id="evidence-verifier">
         <p className="eyebrow">SELECTIVE EVIDENCE</p><h2>Verify one case.<br />Learn nothing about the researcher&apos;s other cases.</h2>

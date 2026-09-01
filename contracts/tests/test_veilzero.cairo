@@ -72,6 +72,27 @@ fn make_claim_hash(
     poseidon_hash_span(array!['VZ_CLAIM_MSG_V1', program_id, case_id, secret, note_id].span())
 }
 
+fn make_reward_request_hash(
+    program_id: felt252, case_id: felt252, claim_commitment: felt252,
+) -> felt252 {
+    poseidon_hash_span(array!['VZ_REWARD_REQ_V1', program_id, case_id, claim_commitment].span())
+}
+
+fn authorize_reward(
+    dispatcher: IVeilZeroDispatcher,
+    program_id: felt252,
+    case_id: felt252,
+    tier: u8,
+    secret: felt252,
+    expiry: u64,
+) {
+    let commitment = make_claim_commitment(program_id, case_id, secret);
+    let (r, s) = researcher_key()
+        .sign(make_reward_request_hash(program_id, case_id, commitment))
+        .unwrap();
+    dispatcher.authorize_reward(program_id, case_id, tier, commitment, expiry, r, s);
+}
+
 fn make_clarification_hash(
     program_id: felt252,
     case_id: felt252,
@@ -107,6 +128,12 @@ fn authorization_hashes_match_typescript_vectors() {
             1, 7, 555, 777,
         ) == 0x4a818bb93218433c6c8e1344ba4fd01db70448da1ba03223302dbe8451bf4ae,
         'claim message vector',
+    );
+    assert(
+        make_reward_request_hash(
+            1, 7, 0x888,
+        ) == 0x58bab35da3230992321b0345affa39476bee41c53c195dbdc8040d24d782b9d,
+        'reward request vector',
     );
 }
 
@@ -298,7 +325,7 @@ fn authorization_locks_reserve_and_claim_spends_the_case_lock() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     assert(dispatcher.get_reserve(1) == 0, 'reserve locked');
     assert(dispatcher.get_case(1, 7).reward_amount == 20, 'case lock');
     start_cheat_caller_address(contract_address, pool);
@@ -314,6 +341,40 @@ fn authorization_locks_reserve_and_claim_spends_the_case_lock() {
 }
 
 #[test]
+#[should_panic(expected: 'BAD_SIGNATURE')]
+fn reward_authorization_rejects_vendor_commitment_substitution() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    let authorized = make_claim_commitment(1, 7, 555);
+    let substituted = make_claim_commitment(1, 7, 556);
+    let (r, s) = researcher_key().sign(make_reward_request_hash(1, 7, authorized)).unwrap();
+    dispatcher.authorize_reward(1, 7, 2, substituted, 1000, r, s);
+}
+
+#[test]
+#[should_panic(expected: 'BAD_SIGNATURE')]
+fn reward_authorization_request_cannot_replay_across_programs() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    create_program(dispatcher, contract_address, admin, token, 2);
+    dispatcher.fund_program(2, 100);
+    submit_case(dispatcher, contract_address, pool, 2, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(2, 7);
+    dispatcher.decide(2, 7, true);
+    let commitment = make_claim_commitment(2, 7, 555);
+    let (r, s) = researcher_key().sign(make_reward_request_hash(1, 7, commitment)).unwrap();
+    dispatcher.authorize_reward(2, 7, 2, commitment, 1000, r, s);
+}
+
+#[test]
 #[should_panic(expected: 'INSUFFICIENT_RESERVE')]
 fn reward_authorizations_cannot_overcommit_one_reserve() {
     let (dispatcher, contract_address, pool, token) = deploy_protocol();
@@ -325,11 +386,11 @@ fn reward_authorizations_cannot_overcommit_one_reserve() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 3, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 3, 555, 1000);
     assert(dispatcher.get_reserve(1) == 20, 'first lock');
     dispatcher.acknowledge(1, 8);
     dispatcher.decide(1, 8, true);
-    dispatcher.authorize_reward(1, 8, 3, make_claim_commitment(1, 8, 556), 1000);
+    authorize_reward(dispatcher, 1, 8, 3, 556, 1000);
 }
 
 #[test]
@@ -342,14 +403,14 @@ fn expired_reward_lock_can_be_released_and_reauthorized() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     assert(dispatcher.get_reserve(1) == 80, 'locked reserve');
     start_cheat_block_timestamp(contract_address, 1001);
     dispatcher.release_expired_reward(1, 7);
     assert(dispatcher.get_reserve(1) == 100, 'released reserve');
     assert(dispatcher.get_case_status(1, 7) == 3, 'accepted again');
     assert(dispatcher.get_case(1, 7).reward_amount == 0, 'lock cleared');
-    dispatcher.authorize_reward(1, 7, 1, make_claim_commitment(1, 7, 556), 2000);
+    authorize_reward(dispatcher, 1, 7, 1, 556, 2000);
     assert(dispatcher.get_reserve(1) == 90, 'reauthorized lock');
 }
 
@@ -364,7 +425,7 @@ fn active_reward_lock_cannot_be_released() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     dispatcher.release_expired_reward(1, 7);
 }
 
@@ -378,7 +439,7 @@ fn paused_program_withdraws_only_available_reserve() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 3, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 3, 555, 1000);
     assert(dispatcher.get_reserve(1) == 70, 'available after lock');
     dispatcher.set_program_active(1, false);
     dispatcher.withdraw_available_reserve(1, 70);
@@ -407,7 +468,7 @@ fn withdrawal_cannot_consume_case_locked_amount() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 3, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 3, 555, 1000);
     dispatcher.set_program_active(1, false);
     dispatcher.withdraw_available_reserve(1, 1);
 }
@@ -423,7 +484,7 @@ fn duplicate_settlement_is_rejected() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
     dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
@@ -441,7 +502,7 @@ fn wrong_nullifier_is_rejected() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 1, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 1, 555, 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 556, 777)).unwrap();
     dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 556, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
@@ -458,7 +519,7 @@ fn zero_nullifier_is_rejected() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     start_cheat_caller_address(contract_address, pool);
     dispatcher.privacy_invoke(2, 1, 7, 1, 1, 0, 0, 0, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
 }
@@ -473,7 +534,7 @@ fn unknown_reward_tier_is_rejected() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 4, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 4, 555, 1000);
 }
 
 #[test]
@@ -486,7 +547,7 @@ fn expired_reward_authorization_is_rejected() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 0);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 0);
 }
 
 #[test]
@@ -511,7 +572,7 @@ fn claim_cannot_substitute_destination_note() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 1, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 1, 555, 1000);
     start_cheat_caller_address(contract_address, pool);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
     dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 778, NOTE_MARKER_AFTER);
@@ -527,7 +588,7 @@ fn estimation_preview_accepts_only_zero_signature_and_returns_bound_note() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     start_cheat_caller_address(contract_address, pool);
     start_cheat_transaction_version(contract_address, ESTIMATION_VERSION);
     let deposits = dispatcher
@@ -548,7 +609,7 @@ fn canonical_transaction_rejects_preview_signature() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     start_cheat_caller_address(contract_address, pool);
     dispatcher.privacy_invoke(2, 1, 7, 0, 0, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
 }
@@ -564,7 +625,7 @@ fn claim_rejects_note_marker_substitution() {
     start_cheat_caller_address(contract_address, admin);
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
-    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    authorize_reward(dispatcher, 1, 7, 2, 555, 1000);
     let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
     start_cheat_caller_address(contract_address, pool);
     dispatcher.privacy_invoke(2, 1, 7, r, s, 0, 0, 555, 1, 777, NOTE_MARKER_AFTER);

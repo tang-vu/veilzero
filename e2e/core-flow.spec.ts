@@ -34,3 +34,25 @@ test("binds a public vendor manifest without exposing the private key", async ({
   await expect(page.getByText(/privateKey/i)).toHaveCount(0);
   await expect(page.getByText(/claimSecret/i)).toHaveCount(0);
 });
+
+test("verifies a signed reward request before building vendor calls", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Generate program key" }).click();
+  await page.getByLabel("Reward token address").fill("0x456");
+  await page.getByRole("button", { name: "Bind public program manifest" }).click();
+  await page.getByLabel(/Vulnerability report/).fill("Critical authorization request integration report with reproducible impact.");
+  await page.getByRole("button", { name: "Encrypt and bind case" }).click();
+
+  const downloadStarted = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export signed reward request" }).click();
+  const request = await downloadStarted;
+  await page.getByLabel(/Reward authorization request/).setInputFiles(await request.path() as string);
+  await expect(page.getByText("Valid case-signed reward request.", { exact: false })).toBeVisible();
+
+  await page.getByLabel("Undeployed VeilZero contract address").fill("0x789");
+  await page.getByRole("button", { name: "Build non-submitting vendor calls" }).click();
+  const preview = page.getByLabel("Vendor transaction call preview");
+  await expect(preview).toContainText('"entrypoint": "approve"');
+  await expect(preview).toContainText('"entrypoint": "authorize_reward"');
+  await expect(preview).not.toContainText("claimSecret");
+});

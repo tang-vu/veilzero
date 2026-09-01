@@ -5,13 +5,13 @@ import { hash } from "starknet";
 const artifacts = {
   sierra: {
     path: "contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json",
-    sha256: "b13014c00ee0e65831e50a2c46611c3f3d9e6ece41236117c7eef0bb1a2d852b",
-    classHash: "0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56",
+    sha256: "fd033dfe84634a1c46e6854ade449e5fbaf67f64a79409539cbc1c1819622ca8",
+    classHash: "0x01c4ddb21597feb40ad7d51da6749c1b8cd6b52b84b7ffe13ae4da9619920503",
   },
   casm: {
     path: "contracts/target/dev/veilzero_protocol_VeilZero.compiled_contract_class.json",
-    sha256: "8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53",
-    classHash: "0x0264bccfb4ff096e2de7b087ffec2a89fbd77c73ac360100bbe724a51cfabeed",
+    sha256: "816fc781916a10d441c01fc2f90e2854f55cc94a0201bad982fd2c6d98afcbe9",
+    classHash: "0x006bea38144dd691e99894a0f603823c29f33d3c4013abecd2999c67a2391b78",
   },
 };
 
