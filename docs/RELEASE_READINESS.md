@@ -55,3 +55,11 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - CASM SHA-256/class hash: `8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53` / `0x0264bccfb4ff096e2de7b087ffec2a89fbd77c73ac360100bbe724a51cfabeed`.
 - Starknet.js and `sncast` independently produced the same Sierra class hash. At mainnet block `14208014`, the class remained undeclared and the current compatible pool fee remained 6 STRK.
 - Public workflow `33532857013` performed a fresh frozen/script-disabled install at exact commit `ee59b49`, passed 62 application tests plus configured release checks, and deployed Pages successfully. The unauthenticated demo returned HTTP 200 with the case-lock explanation and explicit undeployed boundary. Cairo/Foundry evidence is the separate local 40-test run recorded above.
+
+## Public checksum-pinned Cairo verification — 2026-09-01
+
+- GitHub Actions run `33533436640` checked out exact public commit `7af5a27b439fe36e1fdbdba68ae19b3da8ef30ec` and completed successfully.
+- The workflow downloaded the official Linux archives for Scarb 2.20.1, Starknet Foundry 0.63.0 and Universal Sierra Compiler 2.10.0, rejecting each archive unless its pinned official SHA-256 matched.
+- `scarb fmt --check`, `scarb build` and all 40 Cairo tests passed on the public runner.
+- The runner reproduced Sierra SHA-256 `b13014c00ee0e65831e50a2c46611c3f3d9e6ece41236117c7eef0bb1a2d852b`, CASM SHA-256 `8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53` and Sierra class hash `0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56`.
+- The companion Pages run `33533436651` also passed for the same exact commit. This makes the contract build/test evidence independently reproducible from the public repository rather than dependent only on the local Docker result.
