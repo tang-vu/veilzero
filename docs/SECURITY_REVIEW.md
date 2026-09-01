@@ -14,6 +14,7 @@ Review opened 2026-09-01; unresolved findings are retained.
 | Estimation preview accidentally submittable | Critical | Fixed + contract tested | Zero-signature preview requires exact Starknet estimation version `2^128 + 3`; canonical transaction version rejects it |
 | Stored case-auth commitment was unused | Critical | Fixed + adversarially tested | Clarifications verify Stark ECDSA over domain/program/case/message/size |
 | Private action calldata drift or incomplete wallet proof | High | Fixed locally / live validation pending | Submission and clarification builders map all eleven fields explicitly, zero unused fields, sign clarification context, and reject any empty proof component |
+| Overbroad reserve allowance or malformed administrator call | High | Fixed locally / live validation pending | Funding approves exactly one deposit amount; typed builders fix entrypoints and enforce u64/u128, SLA, tier and expiry bounds before wallet interaction |
 | Oversized/empty ciphertext | Medium | Fixed | 1..16400 ciphertext-byte contract bounds (16 KiB UTF-8 plaintext plus GCM tag) and tests |
 | Ambiguous transaction retry | High | Fixed in diagnostic model | Ambiguous state cannot resubmit |
 | Plaintext logging/storage | High | No instance found | No logger/localStorage/backend; field cleared after encrypt |

@@ -67,3 +67,7 @@ The release deployment uses Starknet.js's canonical UDC with `unique: true`, con
 ## 2026-09-01 — Prepare researcher case actions as explicit eleven-field invokes
 
 Submission and clarification use a single STRK20 invoke action and never synthesize a frontend success. The client maps every `privacy_invoke` field explicitly, zeros action-inapplicable fields, signs clarification context with the case key, requests a non-simulated proof, and fails closed if any proof component is absent. Actual `wallet_addInvokeTransaction` remains behind live-wallet validation and a human signature.
+
+## 2026-09-01 — Constrain vendor administration to typed call builders
+
+Vendor calls are public account transactions but still fail closed before wallet interaction. Builders expose only the protocol's fixed entrypoints, validate Cairo-compatible numeric bounds and ordering, require reward expiry beyond a supplied current block timestamp, and approve exactly the reserve funding amount rather than an unlimited allowance.
