@@ -2,7 +2,7 @@
 
 - Repository: https://github.com/tang-vu/veilzero (public)
 - Registration PR: https://github.com/starkience/strk20-hackathon/pull/261 (official check passed; applied to upstream `main` as `0554021`; bot closed rather than merged by design)
-- Demo: https://tang-vu.github.io/veilzero/ (deployment run `33528216431` succeeded for `0b2cd7b`; fresh frozen install, 32 tests, build and release checks passed; HTTP 200, live-pool evidence panel and explicit undeployed boundary verified unauthenticated on 2026-09-01)
+- Demo: https://tang-vu.github.io/veilzero/ (deployment run `33531982603` succeeded for corrected contract commit `46a46f6`; fresh frozen install, 62 tests, build and release checks passed; explicit undeployed boundary retained)
 - Video: pending
 - Mainnet contract: pending
 - Verified transactions: 0/3

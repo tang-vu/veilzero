@@ -263,7 +263,7 @@ export default function Home() {
 
       <section className="lifecycle">
         <p className="eyebrow">ON-CHAIN CASE LIFECYCLE</p><h2>Commitments force the process into daylight.<br />The report stays in the dark.</h2>
-        <div className="steps">{phases.map((phase, index) => <div className={index === 0 ? "step active" : "step"} key={phase}><span>0{index + 1}</span><strong>{phase}</strong><small>{index === 0 ? "Report + ciphertext commitments" : index === 1 ? "Acknowledgement clock stops" : index === 2 ? "Fixed reward tier is bound" : index === 3 ? "One-time nullifier issued" : "Shielded note returned"}</small></div>)}</div>
+        <div className="steps">{phases.map((phase, index) => <div className={index === 0 ? "step active" : "step"} key={phase}><span>0{index + 1}</span><strong>{phase}</strong><small>{index === 0 ? "Report + ciphertext commitments" : index === 1 ? "Acknowledgement clock stops" : index === 2 ? "Fixed reward tier is selected" : index === 3 ? "Exact tier locked to this case" : "One-time nullifier + shielded note"}</small></div>)}</div>
       </section>
 
       <section className="boundary" id="evidence-verifier">

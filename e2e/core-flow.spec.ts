@@ -4,6 +4,7 @@ test("encrypts locally without claiming chain success", async ({ page }) => {
   await expect(page.getByText("READ-ONLY MAINNET EVIDENCE")).toBeVisible();
   await expect(page.getByText("6 STRK per pool action at block 14205166")).toBeVisible();
   await expect(page.getByText("Contract not deployed · transactions 0/3")).toBeVisible();
+  await expect(page.getByText("Exact tier locked to this case")).toBeVisible();
   await page.getByRole("button", { name: "Generate program key" }).click();
   await expect(page.getByText("No program key generated.")).toHaveCount(0);
   const plaintext = "Critical report reproduction details that remain encrypted.";

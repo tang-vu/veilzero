@@ -2,7 +2,7 @@
 
 Status: **built and tested locally; not declared or deployed**.
 
-These values identify the deterministic post-overcommit-fix release candidate. They are not a declaration transaction, deployed contract address, or mainnet evidence, and they must not be copied into `strk20.json` as either. The exact source commit is recorded in release readiness after this candidate is pushed.
+These values identify the deterministic post-overcommit-fix release candidate at source commit `46a46f6`. They are not a declaration transaction, deployed contract address, or mainnet evidence, and they must not be copied into `strk20.json` as either.
 
 | Artifact | SHA-256 | Starknet class hash |
 | --- | --- | --- |

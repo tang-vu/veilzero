@@ -38,8 +38,10 @@ The repository is reproducible for its implemented read-only app and Cairo build
 
 ## Corrected escrow release candidate — 2026-09-01
 
+- Exact contract-bearing source commit: `46a46f6d5cc3e20329bda32bc063c8bdf3ad9e14`.
 - Security re-audit found that balance-only authorization could overcommit one reserve across multiple cases. The corrected contract locks the exact tier per case at authorization, settles from the lock, and permits administrator release only strictly after expiry.
 - Pinned Scarb 2.20.1 formatting/build passed. Foundry 0.63.0 ran 30 deployed-contract and 7 pure tests: 37 passed, 0 failed. New tests cover cross-case overcommit rejection, lock accounting, expiry release and safe reauthorization.
 - Corrected Sierra SHA-256/class hash: `7227a982ed374637214f9c73902af5b50b768494e885b3a148f84d5265fc221e` / `0x02450ec72f2e622888a3ab378cf4978dcdd717f2e2365b6fea6e70e7f785d269`.
 - Corrected CASM SHA-256/class hash: `145b57ddad7e4fef1a90d2ab4825f4b008b755b6a19ae66b46727443f3d32397` / `0x00008f826a0adefdf8e4455df7013d07fd12c3a63a77062cd5e52eb1b03fbfeb`.
 - Starknet.js and `sncast` independently produced the same Sierra class hash. A block-pinned mainnet read at block `14207687` found the corrected class undeclared and the current pool surface compatible with a 6 STRK fee.
+- Public workflow `33531982603` performed a fresh frozen/script-disabled install at exact commit `46a46f6`, passed 62 application tests plus configured release checks, and deployed Pages successfully. Cairo/Foundry evidence is the separate local 37-test run recorded above because the Pages workflow does not execute Foundry.
