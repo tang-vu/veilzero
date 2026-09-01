@@ -1,7 +1,7 @@
 # Submission tracker
 
-- Repository: https://github.com/tang-vu/veilzero (remote pending at initial creation)
-- Registration PR: pending
+- Repository: https://github.com/tang-vu/veilzero (public)
+- Registration PR: https://github.com/starkience/strk20-hackathon/pull/261 (open; official check queued at last observation)
 - Demo: pending
 - Video: pending
 - Mainnet contract: pending
