@@ -14,6 +14,8 @@
 | STRK20 starter | commit 187fe789… | ABI/reference only | No |
 | starknet-privacy | commit 4db755b… / 0.14.3 RC line | Pool/ABI reference | SDK would handle viewing material; not wired |
 
+Reference-only live-network source: `@avnu/avnu-sdk@4.2.0` supplies the published mainnet and Sepolia pool constants used by the read-only probe. It is not installed and handles no VeilZero material.
+
 All JavaScript versions are exact. Lockfile integrity is mandatory.
 
 pnpm explicitly denies the optional `unrs-resolver` build script; its pinned platform binary works without it. The GitHub Pages install disables all dependency lifecycle scripts; lint and build must still pass before deployment.

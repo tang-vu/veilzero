@@ -21,11 +21,12 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Selective authorship proof | Implemented + unit tested | Case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
-| Pool-pinned `privacy_invoke` | Implemented against starter ABI | Configured pool is caller, never the user |
+| Pool-pinned `privacy_invoke` | Implemented + contract tested + live ABI probed | Single-span return matches official docs and observed mainnet pool v2.0 |
 | Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
 | Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Estimation-only preview, marker extraction, case signature, proof completeness and note-drift abort |
 | Reproducible contract artifact identity | Verified locally, not declared | Pinned Sierra/CASM SHA-256 and class hashes in `docs/evidence/contract-artifact.md` |
-| Wallet API submission | Deferred pending live ABI validation | Diagnostic is explicitly read-only; no fake success path |
+| Live pool diagnostics | Read-only mainnet verified | Address, class, ABI surface, version and 6 STRK observed fee pinned to block `14205166` |
+| Wallet API submission | Deferred pending live wallet validation | Diagnostic is explicitly read-only; no fake success path |
 | Mainnet evidence | Not started | `strk20.json` is honestly empty |
 
 ## Three-minute demo flow
@@ -54,7 +55,7 @@ The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted 
 
 ## STRK20 integration depth
 
-VeilZero is a stateful anonymizer rather than a private-transfer skin. Its contract pins the pool as the only `privacy_invoke` caller, stores project-specific state, returns the current `OpenNoteDeposit` ABI, and enforces project state before the pool can create the reward note. The mainnet route is blocked until the live pool/anonymizer boundary is verified; upstream issue #978 shows current `main` differs from the deployed Sepolia return ABI.
+VeilZero is a stateful anonymizer rather than a private-transfer skin. Its contract pins the pool as the only `privacy_invoke` caller, stores project-specific state, returns one `Span<OpenNoteDeposit>`, and enforces project state before the pool can create the reward note. The official helper documentation and a block-pinned read of the live mainnet pool v2.0 agree on that legacy surface. Upstream issue #978 remains an upgrade warning: current privacy-monorepo `main` has moved to a newer return shape, so VeilZero re-probes the upgradeable pool rather than assuming compatibility.
 
 The destination-bound claim preparation and its fail-closed invariants are documented in [docs/WALLET_CLAIM_ADAPTER.md](docs/WALLET_CLAIM_ADAPTER.md).
 
@@ -64,9 +65,9 @@ No contract address or transaction hash is claimed yet.
 
 | Action | VeilZero contract | STRK20 pool | Transaction | Status |
 |---|---|---|---|---|
-| Case submission | — | — | — | Not executed |
-| Case follow-up | — | — | — | Not executed |
-| Bounty settlement | — | — | — | Not executed |
+| Case submission | — | `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a` | — | Not executed |
+| Case follow-up | — | `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a` | — | Not executed |
+| Bounty settlement | — | `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a` | — | Not executed |
 
 ## Privacy boundary
 
@@ -107,7 +108,7 @@ cd contracts && scarb test
 ## Current limitations
 
 - X25519 envelope encryption requires modern WebCrypto support; the no-program-key path remains a conspicuously local-only diagnostic fallback.
-- No hosted prover or discovery endpoint is configured or trusted.
+- No application prover or discovery endpoint is configured: the official dapp route assigns keys, note discovery and proving to the connected privacy wallet. The wallet's infrastructure remains a trust and availability boundary.
 - The destination-bound Wallet API claim adapter is implemented but not live-validated. It uses a non-submittable estimation preview to resolve `${openNoteIds[0]}`, signs that note, prepares the real proof, and aborts on note drift. A compatible wallet and deployed pool must verify the full behavior before enabling submission.
 - No contract is deployed; no mainnet transaction or fee exists.
 - Ciphertext delivery is an out-of-band public-envelope file in this MVP. Availability and transport confidentiality are not provided by VeilZero.
@@ -120,8 +121,8 @@ The Cairo reserve/settlement anonymizer, explicit privacy-boundary model, eviden
 
 ## Roadmap
 
-1. Validate the exact live mainnet ABI and pool fee.
-2. Validate Wallet API transaction building against the deployed pool ABI.
+1. Re-probe the upgradeable live mainnet pool and fee immediately before each signing gate.
+2. Validate Wallet API transaction building and destination-note stability with a Ready/Xverse-compatible wallet.
 3. Run Cairo and browser adversarial suites; deploy to a supported test path.
 4. Deploy through a human wallet gate, verify three mainnet transactions, publish demo and video.
 

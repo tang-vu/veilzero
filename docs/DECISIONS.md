@@ -55,3 +55,7 @@ Every external GitHub Action in the Pages workflow is pinned to the commit resol
 ## 2026-09-01 — Pin the release-candidate contract artifact identity
 
 The release candidate records SHA-256 digests plus normalized Sierra and CASM class hashes. A tracked verifier recomputes all four values after a Scarb build. These identifiers are deliberately kept out of `strk20.json`: they prove deterministic artifact identity, not declaration, deployment or mainnet execution.
+
+## 2026-09-01 — Use the wallet-managed proving route and live legacy pool surface
+
+Current official Wallet API guidance assigns viewing keys, note discovery and proof generation to the connected Ready/Xverse-compatible wallet, so VeilZero does not configure an application prover or indexer. AVNU SDK 4.2.0 supplies the documented mainnet pool constant. A block-pinned read-only ABI probe confirms that pool remains on the global-screening surface compatible with VeilZero's single `Span<OpenNoteDeposit>` return. Because the pool is upgradeable, compatibility and fees must be re-probed before every signing gate.

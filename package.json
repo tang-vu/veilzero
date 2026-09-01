@@ -19,6 +19,7 @@
     "verify:strk20": "node scripts/verify-strk20-json.mjs",
     "verify:evidence": "node scripts/verify-mainnet-evidence.mjs",
     "verify:artifact": "node scripts/verify-contract-artifact.mjs",
+    "probe:pool": "node scripts/probe-strk20-pool.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs"
   },
   "dependencies": {

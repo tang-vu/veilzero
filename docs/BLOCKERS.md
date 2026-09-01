@@ -3,13 +3,12 @@
 ## Active
 
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
-- A current organizer-approved proving/discovery endpoint has not been verified; none is configured.
-- Upstream issue #978 documents an anonymizer return-ABI mismatch between current `main` and the live Sepolia pool. Pool/contract compatibility must be proven before deployment.
 - The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter has local drift, proof-completeness and transaction-version tests, but still requires a compatible live wallet and pool to validate marker visibility and stable note resolution before deployment can be called ready.
+- A real three-minute video requires the human-signed deployed flow and remains unrecorded.
 
 ## Exact continuation
 
-After an organizer-approved prover/discovery route and compatible pool ABI are confirmed, rebuild and re-verify the unchanged release candidate:
+After a Ready/Xverse-compatible wallet confirms the live prepare/sign/re-prepare behavior, rebuild and re-verify the unchanged release candidate:
 
 ```powershell
 pnpm install --frozen-lockfile --ignore-scripts
@@ -24,6 +23,8 @@ pnpm verify:artifact
 pnpm scan:secrets
 pnpm verify:strk20
 ```
+
+Immediately before any deployment/signing gate, set a current process-scoped RPC and rerun `pnpm probe:pool`; compare its address, class hash, ABI surface and fee with `docs/evidence/live-pool-probe.md`.
 
 After human-signed qualifying transactions have final accepted receipts, place the three candidate hashes and deployed address into the local `strk20.json`, then set the evidence variables and reconcile before committing that file:
 
@@ -44,3 +45,5 @@ Values in angle brackets are deliberately unresolved external evidence, not defa
 - GitHub authentication is active as `tang-vu`.
 - Product collision audit did not require a pivot.
 - No authenticated Vercel CLI was present; GitHub Pages deployed successfully instead.
+- The official helper documentation and the live mainnet pool ABI both require the single `Span<OpenNoteDeposit>` return VeilZero implements. The mainnet pool observation is recorded in `docs/evidence/live-pool-probe.md`; upstream issue #978 remains relevant only as an upgrade/version warning.
+- The primary dapp route does not need an application-configured prover or discovery URL: current official Wallet API guidance assigns keys, notes, discovery and proving to the connected privacy wallet. No endpoint is guessed or added to VeilZero.

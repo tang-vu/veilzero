@@ -34,5 +34,5 @@ No pivot condition was met. A direct conceptual competitor exists but has not sh
 - Official rules require three successful mainnet transactions touching the live pool and the project's contract path when contracts are declared.
 - Starter pins Starknet.js 10.4.0, Wallet API types 0.10.3 and Cairo 2.18.0.
 - Privacy SDK release line is 0.14.3 RC; matching services are mandatory.
-- Upstream issue #978 documents a deployed-Sepolia/current-main anonymizer return-signature mismatch. Issue #956 asks how third-party clients reach a prover; #718 flags smart-wallet signing behavior. These block claims of end-to-end readiness, not local protocol work.
-- The project will not guess hosted endpoints or deploy against an unverified pool ABI.
+- Upstream issue #978 documents a deployed-pool/current-main anonymizer return-signature boundary. Official helper docs and a block-pinned live mainnet ABI probe show that VeilZero's single-span return matches the currently deployed v2.0 pool. Issue #956 affects direct SDK clients; VeilZero uses the recommended wallet-managed proving route instead. Live wallet orchestration still blocks end-to-end claims.
+- The project will not guess hosted endpoints. It re-probes the upgradeable pool ABI and fee before every signing gate.

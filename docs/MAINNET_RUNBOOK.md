@@ -2,6 +2,8 @@
 
 No agent signs or submits a mainnet write. Before each browser-wallet action: verify chain ID, pool address and ABI from current official sources; read the live pool fee; estimate network fee; update the cost ledger; ensure cumulative actual+projected cost is below 100 STRK; simulate; present the human gate; reconcile the receipt before another action.
 
+Current read-only candidate: pool `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a`, observed class `0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d` and fee 6 STRK at block `14205166`. These are observations, not permanent configuration. Run `pnpm probe:pool` against a current mainnet RPC before every gate and stop on any mismatch or unknown surface.
+
 Qualification sequence: private case submission through pool→VeilZero, private case clarification through pool→VeilZero, and reward claim through pool→VeilZero returning an open note. Shield/funding/administrator calls are supporting evidence only.
 
 Authorization never publishes the raw claim secret. The vendor stores `Poseidon(VZ_CLAIM_AUTH_V1, program, case, secret)`. The final claim reveals the one-time secret and passes a case-key signature over `Poseidon(VZ_CLAIM_MSG_V1, program, case, secret, note_id)`. Do not sign a claim until the wallet has produced the exact destination note identifier used by the invocation.

@@ -199,6 +199,22 @@ export default function Home() {
         <div className="steps">{phases.map((phase, index) => <div className={index === 0 ? "step active" : "step"} key={phase}><span>0{index + 1}</span><strong>{phase}</strong><small>{index === 0 ? "Report + ciphertext commitments" : index === 1 ? "Acknowledgement clock stops" : index === 2 ? "Fixed reward tier is bound" : index === 3 ? "One-time nullifier issued" : "Shielded note returned"}</small></div>)}</div>
       </section>
 
+      <section className="boundary" id="live-pool-evidence">
+        <p className="eyebrow">READ-ONLY MAINNET EVIDENCE</p><h2>The live pool path is identified.<br />No transaction is implied.</h2>
+        <div className="panel receiptPanel">
+          <dl>
+            <div><dt>Network</dt><dd>Starknet mainnet · pool v2.0</dd></div>
+            <div><dt>Pool</dt><dd className="mono">0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a</dd></div>
+            <div><dt>Observed class</dt><dd className="mono">0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d</dd></div>
+            <div><dt>Helper ABI</dt><dd>Single Span&lt;OpenNoteDeposit&gt; · compatible at observation</dd></div>
+            <div><dt>Protocol fee</dt><dd>6 STRK per pool action at block 14205166</dd></div>
+            <div><dt>VeilZero state</dt><dd>Contract not deployed · transactions 0/3</dd></div>
+          </dl>
+          <p className="warning">The pool is upgradeable. Address, class, ABI, fee, and wallet estimate must be rechecked immediately before every browser signature.</p>
+          <a className="button" href="https://starkscan.co/contract/0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a" target="_blank" rel="noreferrer">Inspect live pool ↗</a>
+        </div>
+      </section>
+
       <section className="boundary" id="wallet-diagnostics">
         <p className="eyebrow">DEVELOPER DIAGNOSTIC · READ ONLY</p><h2>Probe the wallet before trusting a transaction path.</h2>
         <div className="panel receiptPanel">
