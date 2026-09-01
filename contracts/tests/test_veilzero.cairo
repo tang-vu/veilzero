@@ -5,7 +5,7 @@ use snforge_std::signature::stark_curve::{
 };
 use snforge_std::{
     ContractClassTrait, DeclareResultTrait, EventSpyTrait, declare, spy_events,
-    start_cheat_caller_address, start_cheat_transaction_version,
+    start_cheat_block_timestamp, start_cheat_caller_address, start_cheat_transaction_version,
 };
 use starknet::ContractAddress;
 use veilzero_protocol::{IVeilZeroDispatcher, IVeilZeroDispatcherTrait};
@@ -283,7 +283,51 @@ fn oversized_payload_is_rejected() {
 }
 
 #[test]
-fn reserve_backed_claim_returns_one_note_and_debits_reserve() {
+fn authorization_locks_reserve_and_claim_spends_the_case_lock() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 20);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    assert(dispatcher.get_reserve(1) == 0, 'reserve locked');
+    assert(dispatcher.get_case(1, 7).reward_amount == 20, 'case lock');
+    start_cheat_caller_address(contract_address, pool);
+    let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
+    let deposits = dispatcher
+        .privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
+    assert(deposits.len() == 1, 'one note');
+    let deposit = *deposits.at(0);
+    assert(deposit.amount == 20, 'tier amount');
+    assert(deposit.note_id == 777, 'note id');
+    assert(dispatcher.get_reserve(1) == 0, 'no double debit');
+    assert(dispatcher.get_case_status(1, 7) == 5, 'settled status');
+}
+
+#[test]
+#[should_panic(expected: 'INSUFFICIENT_RESERVE')]
+fn reward_authorizations_cannot_overcommit_one_reserve() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 50);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    submit_case(dispatcher, contract_address, pool, 1, 8);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 3, make_claim_commitment(1, 7, 555), 1000);
+    assert(dispatcher.get_reserve(1) == 20, 'first lock');
+    dispatcher.acknowledge(1, 8);
+    dispatcher.decide(1, 8, true);
+    dispatcher.authorize_reward(1, 8, 3, make_claim_commitment(1, 8, 556), 1000);
+}
+
+#[test]
+fn expired_reward_lock_can_be_released_and_reauthorized() {
     let (dispatcher, contract_address, pool, token) = deploy_protocol();
     let admin = address(222);
     create_program(dispatcher, contract_address, admin, token, 1);
@@ -293,16 +337,29 @@ fn reserve_backed_claim_returns_one_note_and_debits_reserve() {
     dispatcher.acknowledge(1, 7);
     dispatcher.decide(1, 7, true);
     dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
-    start_cheat_caller_address(contract_address, pool);
-    let (r, s) = researcher_key().sign(make_claim_hash(1, 7, 555, 777)).unwrap();
-    let deposits = dispatcher
-        .privacy_invoke(2, 1, 7, r, s, 0, 0, 555, NOTE_MARKER_BEFORE, 777, NOTE_MARKER_AFTER);
-    assert(deposits.len() == 1, 'one note');
-    let deposit = *deposits.at(0);
-    assert(deposit.amount == 20, 'tier amount');
-    assert(deposit.note_id == 777, 'note id');
-    assert(dispatcher.get_reserve(1) == 80, 'reserve debit');
-    assert(dispatcher.get_case_status(1, 7) == 5, 'settled status');
+    assert(dispatcher.get_reserve(1) == 80, 'locked reserve');
+    start_cheat_block_timestamp(contract_address, 1001);
+    dispatcher.release_expired_reward(1, 7);
+    assert(dispatcher.get_reserve(1) == 100, 'released reserve');
+    assert(dispatcher.get_case_status(1, 7) == 3, 'accepted again');
+    assert(dispatcher.get_case(1, 7).reward_amount == 0, 'lock cleared');
+    dispatcher.authorize_reward(1, 7, 1, make_claim_commitment(1, 7, 556), 2000);
+    assert(dispatcher.get_reserve(1) == 90, 'reauthorized lock');
+}
+
+#[test]
+#[should_panic(expected: 'AUTH_NOT_EXPIRED')]
+fn active_reward_lock_cannot_be_released() {
+    let (dispatcher, contract_address, pool, token) = deploy_protocol();
+    let admin = address(222);
+    create_program(dispatcher, contract_address, admin, token, 1);
+    dispatcher.fund_program(1, 100);
+    submit_case(dispatcher, contract_address, pool, 1, 7);
+    start_cheat_caller_address(contract_address, admin);
+    dispatcher.acknowledge(1, 7);
+    dispatcher.decide(1, 7, true);
+    dispatcher.authorize_reward(1, 7, 2, make_claim_commitment(1, 7, 555), 1000);
+    dispatcher.release_expired_reward(1, 7);
 }
 
 #[test]

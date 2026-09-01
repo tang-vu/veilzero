@@ -33,6 +33,7 @@ pub struct CaseView {
     pub payload_size: u32,
     pub auth_pubkey: felt252,
     pub reward_tier: u8,
+    pub reward_amount: u128,
     pub claim_commitment: felt252,
     pub reward_expiry: u64,
 }
@@ -74,6 +75,7 @@ pub trait IVeilZero<TState> {
         claim_commitment: felt252,
         expiry: u64,
     );
+    fn release_expired_reward(ref self: TState, program_id: felt252, case_id: felt252);
     fn privacy_invoke(
         ref self: TState,
         action: u8,
@@ -138,6 +140,7 @@ mod VeilZero {
         pub const BAD_SIGNATURE: felt252 = 'BAD_SIGNATURE';
         pub const NULLIFIER_USED: felt252 = 'NULLIFIER_USED';
         pub const AUTH_EXPIRED: felt252 = 'AUTH_EXPIRED';
+        pub const AUTH_NOT_EXPIRED: felt252 = 'AUTH_NOT_EXPIRED';
         pub const INSUFFICIENT_RESERVE: felt252 = 'INSUFFICIENT_RESERVE';
         pub const TOKEN_TRANSFER_FAILED: felt252 = 'TOKEN_TRANSFER_FAILED';
     }
@@ -163,6 +166,7 @@ mod VeilZero {
         case_payload_size: Map<felt252, u32>,
         case_auth_pubkey: Map<felt252, felt252>,
         reward_tier: Map<felt252, u8>,
+        reward_amount: Map<felt252, u128>,
         reward_claim_commitment: Map<felt252, felt252>,
         reward_expiry: Map<felt252, u64>,
         used_nullifiers: Map<felt252, bool>,
@@ -177,6 +181,7 @@ mod VeilZero {
         CaseSubmitted: CaseSubmitted,
         CaseStatusChanged: CaseStatusChanged,
         RewardAuthorized: RewardAuthorized,
+        RewardAuthorizationReleased: RewardAuthorizationReleased,
         RewardSettled: RewardSettled,
         ClarificationRequested: ClarificationRequested,
         ClarificationCommitted: ClarificationCommitted,
@@ -235,8 +240,18 @@ mod VeilZero {
         #[key]
         case_id: felt252,
         tier: u8,
+        amount: u128,
         claim_commitment: felt252,
         expiry: u64,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct RewardAuthorizationReleased {
+        #[key]
+        program_id: felt252,
+        #[key]
+        case_id: felt252,
+        amount: u128,
+        available_reserve: u128,
     }
     #[derive(Drop, starknet::Event)]
     struct RewardSettled {
@@ -417,15 +432,45 @@ mod VeilZero {
             assert(amount > 0, errors::BAD_TIER);
             assert(claim_commitment != 0, errors::BAD_CLAIM);
             assert(expiry > get_block_timestamp(), errors::AUTH_EXPIRED);
-            assert(
-                self.program_reserve.entry(program_id).read() >= amount,
-                errors::INSUFFICIENT_RESERVE,
-            );
+            let available_reserve = self.program_reserve.entry(program_id).read();
+            assert(available_reserve >= amount, errors::INSUFFICIENT_RESERVE);
+            self.program_reserve.entry(program_id).write(available_reserve - amount);
             self.reward_tier.entry(key).write(tier);
+            self.reward_amount.entry(key).write(amount);
             self.reward_claim_commitment.entry(key).write(claim_commitment);
             self.reward_expiry.entry(key).write(expiry);
             self.case_status.entry(key).write(4);
-            self.emit(RewardAuthorized { program_id, case_id, tier, claim_commitment, expiry });
+            self
+                .emit(
+                    RewardAuthorized {
+                        program_id, case_id, tier, amount, claim_commitment, expiry,
+                    },
+                );
+        }
+
+        fn release_expired_reward(ref self: ContractState, program_id: felt252, case_id: felt252) {
+            assert_admin(@self, program_id);
+            let key = case_key(program_id, case_id);
+            assert(self.case_status.entry(key).read() == 4, errors::INVALID_STATUS);
+            assert(
+                get_block_timestamp() > self.reward_expiry.entry(key).read(),
+                errors::AUTH_NOT_EXPIRED,
+            );
+            let amount = self.reward_amount.entry(key).read();
+            assert(amount > 0, errors::BAD_CLAIM);
+            let available_reserve = self.program_reserve.entry(program_id).read() + amount;
+            self.program_reserve.entry(program_id).write(available_reserve);
+            self.reward_tier.entry(key).write(0);
+            self.reward_amount.entry(key).write(0);
+            self.reward_claim_commitment.entry(key).write(0);
+            self.reward_expiry.entry(key).write(0);
+            self.case_status.entry(key).write(3);
+            let now = get_block_timestamp();
+            self
+                .emit(
+                    RewardAuthorizationReleased { program_id, case_id, amount, available_reserve },
+                );
+            self.emit(CaseStatusChanged { program_id, case_id, status: 3, at: now });
         }
 
         fn privacy_invoke(
@@ -549,13 +594,10 @@ mod VeilZero {
                     ),
                 errors::BAD_SIGNATURE,
             );
-            let tier = self.reward_tier.entry(key).read();
-            let amount = self.program_tiers.entry((program_id, tier)).read();
-            let reserve = self.program_reserve.entry(program_id).read();
-            assert(reserve >= amount, errors::INSUFFICIENT_RESERVE);
+            let amount = self.reward_amount.entry(key).read();
+            assert(amount > 0, errors::INSUFFICIENT_RESERVE);
             self.used_nullifiers.entry(nullifier).write(true);
             self.case_status.entry(key).write(5);
-            self.program_reserve.entry(program_id).write(reserve - amount);
             let token_address = self.program_token.entry(program_id).read();
             let token = IERC20Dispatcher { contract_address: token_address };
             assert(token.approve(self.pool.read(), amount.into()), errors::TOKEN_TRANSFER_FAILED);
@@ -598,6 +640,7 @@ mod VeilZero {
                 payload_size: self.case_payload_size.entry(key).read(),
                 auth_pubkey: self.case_auth_pubkey.entry(key).read(),
                 reward_tier: self.reward_tier.entry(key).read(),
+                reward_amount: self.reward_amount.entry(key).read(),
                 claim_commitment: self.reward_claim_commitment.entry(key).read(),
                 reward_expiry: self.reward_expiry.entry(key).read(),
             }

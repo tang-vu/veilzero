@@ -101,3 +101,8 @@ export function buildAuthorizeRewardCall(rawInput: z.input<typeof authorizationI
     feltHex(input.expiry),
   ]);
 }
+
+export function buildReleaseExpiredRewardCall(rawInput: z.input<typeof caseTarget>): Call {
+  const input = caseTarget.parse(rawInput);
+  return call(input.contract, "release_expired_reward", [input.programId, input.caseId]);
+}

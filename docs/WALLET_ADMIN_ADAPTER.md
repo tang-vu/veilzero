@@ -9,7 +9,8 @@
 - commit a clarification request;
 - accept or reject a case;
 - authorize one of the three fixed reward tiers with a future block-time expiry.
+- release a case's locked reward only after its authorization expires.
 
 The builder accepts no arbitrary entrypoint, rejects zero/out-of-field identifiers and commitments, bounds SLA and expiry values to `u64`, bounds rewards/funding to `u128`, and checks ordering before a wallet is involved. Exact approval avoids leaving a larger ERC-20 allowance than the reserve deposit requires.
 
-These are call plans only. The connected account must match the program administrator, read current state and block time, estimate the network fee, present a human signature, and reconcile the receipt. VeilZero never holds or requests the account key.
+These are call plans only. The connected account must match the program administrator, read current state and block time, estimate the network fee, present a human signature, and reconcile the receipt. Available reserve excludes amounts already locked to cases. VeilZero never holds or requests the account key.

@@ -27,7 +27,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Shield/self-transfer/unshield diagnostic construction | Implemented + unit tested; submission disabled | Exact decimal conversion and fixed-value actions; `OPEN` is excluded |
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented + contract tested + live ABI probed | Single-span return matches official docs and observed mainnet pool v2.0 |
-| Reserve-backed open-note settlement | Implemented, not deployed | One-time nullifier + expiry |
+| Case-locked reserve and open-note settlement | Implemented + deployed-contract tested, not deployed | Authorization locks funds; expiry release; one-time nullifier |
 | Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Estimation-only preview, marker extraction, case signature, proof completeness and note-drift abort |
 | Reproducible contract artifact identity | Verified locally, not declared | Pinned Sierra/CASM SHA-256 and class hashes in `docs/evidence/contract-artifact.md` |
 | Deterministic deployment handoff | Read-only mainnet verified | Artifact/pool/UDC/declaration checks; unique address derived from a public deployer address |
@@ -57,7 +57,7 @@ flowchart LR
   R -. recovery package stays local .-> L[(Offline storage)]
 ```
 
-The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted envelope out of band and submits its commitments, size, and a case-scoped Stark public key through the pool; ciphertext is not stored on Starknet. The vendor's public account acknowledges and decides. Acceptance stores a commitment to a one-time claim secret, tier and expiry—not the secret itself. A claim reveals that secret and a case-key signature bound to its destination note, preventing payout redirection even if calldata is copied. Successful settlement marks the nullifier used, debits reserve accounting, approves exactly the fixed tier, and returns one `OpenNoteDeposit` to the pool.
+The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted envelope out of band and submits its commitments, size, and a case-scoped Stark public key through the pool; ciphertext is not stored on Starknet. The vendor's public account acknowledges and decides. Authorization stores a commitment to a one-time claim secret, locks that case's fixed tier from available reserve, and records expiry—not the secret itself. The administrator can release the lock only after expiry. A claim reveals the secret and a case-key signature bound to its destination note, preventing payout redirection even if calldata is copied. Successful settlement marks the nullifier used, spends the case lock, approves exactly that amount, and returns one `OpenNoteDeposit` to the pool.
 
 ## STRK20 integration depth
 

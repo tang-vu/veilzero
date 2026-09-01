@@ -6,6 +6,7 @@ import {
   buildDecisionCall,
   buildFundProgramCalls,
   buildRequestClarificationCall,
+  buildReleaseExpiredRewardCall,
   buildSetProgramActiveCall,
 } from "./vendor-admin-actions";
 
@@ -64,5 +65,8 @@ describe("vendor administrator actions", () => {
     });
     expect(() => buildAuthorizeRewardCall({ ...target, tier: 2, claimCommitment: "0x888", expiry: "1000" }, 1000n)).toThrow("current block timestamp");
     expect(() => buildAuthorizeRewardCall({ ...target, tier: 4 as 3, claimCommitment: "0x888", expiry: "2000" }, 1000n)).toThrow();
+    expect(buildReleaseExpiredRewardCall(target)).toEqual({
+      contractAddress: "0x111", entrypoint: "release_expired_reward", calldata: ["0x222", "0x333"],
+    });
   });
 });

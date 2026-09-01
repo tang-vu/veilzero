@@ -6,8 +6,8 @@ import { classifyPoolSurface, contractFunctions, formatTokenUnits } from "./lib/
 const EXPECTED = {
   sierraPath: "contracts/target/dev/veilzero_protocol_VeilZero.contract_class.json",
   casmPath: "contracts/target/dev/veilzero_protocol_VeilZero.compiled_contract_class.json",
-  classHash: "0x00fd7a15f456de5ea026ef7464d5c60ac75712f1e3e3f3da455798c0b0156d27",
-  compiledClassHash: "0x03006f14cdb03f79ff816465a5a18311df4b5177cadf7df3453b87038b188076",
+  classHash: "0x02450ec72f2e622888a3ab378cf4978dcdd717f2e2365b6fea6e70e7f785d269",
+  compiledClassHash: "0x00008f826a0adefdf8e4455df7013d07fd12c3a63a77062cd5e52eb1b03fbfeb",
 };
 const rpcUrl = process.env.STARKNET_RPC_URL;
 const poolAddress = process.env.STRK20_POOL_ADDRESS;

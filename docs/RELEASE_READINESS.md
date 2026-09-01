@@ -35,3 +35,11 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - The test run used dummy public deployer `0x123`; its predicted address is explicitly not deployment evidence.
 - ESLint, strict TypeScript, production build, Playwright, manifest validation, dependency audit, artifact verification, diff whitespace checks and tracked-file secret scan passed. Cairo sources and dependencies are unchanged from the 34/34 contract-tested artifact; native Windows still has no `scarb` executable, so the existing verified artifact was rehashed rather than rebuilt in this change.
 - Public workflow `33528216431` checked out exact commit `0b2cd7b`, performed a fresh frozen/script-disabled install, passed the 32-test application suite and all configured release checks, and deployed Pages. The unauthenticated URL returned HTTP 200 with the explicit undeployed boundary.
+
+## Corrected escrow release candidate — 2026-09-01
+
+- Security re-audit found that balance-only authorization could overcommit one reserve across multiple cases. The corrected contract locks the exact tier per case at authorization, settles from the lock, and permits administrator release only strictly after expiry.
+- Pinned Scarb 2.20.1 formatting/build passed. Foundry 0.63.0 ran 30 deployed-contract and 7 pure tests: 37 passed, 0 failed. New tests cover cross-case overcommit rejection, lock accounting, expiry release and safe reauthorization.
+- Corrected Sierra SHA-256/class hash: `7227a982ed374637214f9c73902af5b50b768494e885b3a148f84d5265fc221e` / `0x02450ec72f2e622888a3ab378cf4978dcdd717f2e2365b6fea6e70e7f785d269`.
+- Corrected CASM SHA-256/class hash: `145b57ddad7e4fef1a90d2ab4825f4b008b755b6a19ae66b46727443f3d32397` / `0x00008f826a0adefdf8e4455df7013d07fd12c3a63a77062cd5e52eb1b03fbfeb`.
+- Starknet.js and `sncast` independently produced the same Sierra class hash. A block-pinned mainnet read at block `14207687` found the corrected class undeclared and the current pool surface compatible with a 6 STRK fee.

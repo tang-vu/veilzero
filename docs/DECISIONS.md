@@ -91,3 +91,7 @@ The judge-facing verifier caps files at 32 KiB, rejects unknown top-level or sig
 ## 2026-09-01 — Prove qualifying pool involvement from nested traces
 
 Mainnet verification requires a successful execution trace where the configured live STRK20 pool is an ancestor of the declared VeilZero contract call. Receipt events still prove the project-specific transition, but pool events or unrelated sibling calls cannot stand in for execution through the protocol path.
+
+## 2026-09-01 — Lock reserve per case at reward authorization
+
+A balance check alone could overpromise one reserve across multiple accepted cases. Authorization now subtracts the exact fixed tier from available reserve and stores it as the case's immutable reward amount. Settlement consumes that lock without debiting again. Only the administrator, strictly after expiry, can release it back to available reserve and return the case to accepted state for a new authorization.

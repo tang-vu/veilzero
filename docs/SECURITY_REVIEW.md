@@ -4,6 +4,7 @@ Review opened 2026-09-01; unresolved findings are retained.
 
 | Finding | Severity | Status | Resolution/evidence |
 |---|---|---|---|
+| Multiple authorizations overcommit one reserve | Critical | Fixed + deployed-contract tested | Authorization debits available reserve into an immutable case amount; settlement spends the lock without a second debit; only expired locks can be released and reauthorized |
 | Diagnostic package contains local key/secret | High operational | Open by design | Explicit warning, ignored filename, download only; replace with password-wrapped export |
 | Symmetric key was not vendor envelope encryption | High product | Fixed | Ephemeral X25519 + HKDF-SHA256 derives AES-GCM envelope keys; vendor decrypt round-trip and wrong-key tests pass |
 | Published program key/policy substitution | High integrity | Fixed locally | Canonical public manifest binds X25519 key, policy, deadlines, token and ordered tiers; researcher packages reuse the identical key commitment |

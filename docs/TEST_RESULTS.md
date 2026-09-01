@@ -12,9 +12,9 @@
 | Scarb format/build | Pass |
 | Contract artifact identity | Pass; Sierra/CASM SHA-256 and class hashes match the pinned release candidate |
 | Live pool probe | Pass on mainnet v2.0 and Sepolia v2.1; both legacy-global-screening surfaces |
-| Read-only deployment plan | Pass; pinned artifacts, pool ABI/fee, UDC and declaration state verified at mainnet block `14206318` |
+| Read-only deployment plan | Pass; corrected pinned artifacts, pool ABI/fee, UDC and declaration state verified at mainnet block `14207687` |
 | Cairo pure invariant tests under Foundry | 7 passed, 0 failed |
-| Starknet Foundry deployed-contract tests | 27 passed, 0 failed; 34 total with invariants |
+| Starknet Foundry deployed-contract tests | 30 passed, 0 failed; 37 total with invariants |
 | Tracked-file secret scan | Pass across 101 tracked files, including the staged change set |
 
-Starknet Foundry is unavailable on native Windows, so official 0.63.0 Linux artifacts ran in an isolated Docker container. Deployment tests cover program/case collisions, configuration, program binding, pool/admin authorization, clarification signatures and requests, payload bounds, event shape, reserve-backed note return, wrong/zero nullifiers, expiry, tier substitution, destination substitution and duplicate settlement. Live pool ABI behavior still requires a supported network deployment.
+Pinned Scarb 2.20.1 formatted and built the contract locally; Starknet Foundry has no native Windows release, so official 0.63.0 Linux artifacts ran in an isolated Docker container. Deployment tests cover program/case collisions, configuration, program binding, pool/admin authorization, clarification signatures and requests, payload bounds, event shape, case reserve locking, overcommit rejection, expiry release/reauthorize, note return, wrong/zero nullifiers, tier/destination substitution and duplicate settlement. Live pool ABI behavior still requires a supported network deployment.
