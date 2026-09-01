@@ -48,8 +48,10 @@ The repository is reproducible for its implemented read-only app and Cairo build
 
 ## Reserve custody release candidate — 2026-09-01
 
+- Exact contract-bearing source commit: `ee59b4974f5431d87fa691a94e276a098bc2fbb4`.
 - The reserve model now permits a paused program administrator to recover only available funds. Active programs cannot withdraw, case-locked rewards are excluded, and reserve accounting is debited before the ERC-20 transfer.
 - Pinned Scarb 2.20.1 formatting/build passed. Foundry 0.63.0 ran 33 deployed-contract and 7 pure tests: 40 passed, 0 failed. New tests cover active-program rejection, available withdrawal, and inability to consume a case lock.
 - Sierra SHA-256/class hash: `b13014c00ee0e65831e50a2c46611c3f3d9e6ece41236117c7eef0bb1a2d852b` / `0x06b410a4ce4494e79a34998957952d1502eb803fb2e15589021eaf0178b5cb56`.
 - CASM SHA-256/class hash: `8abe0cc92302c14b6e48069cb2f6956d6e84f03df82131d6fad4f16b73d1ec53` / `0x0264bccfb4ff096e2de7b087ffec2a89fbd77c73ac360100bbe724a51cfabeed`.
 - Starknet.js and `sncast` independently produced the same Sierra class hash. At mainnet block `14208014`, the class remained undeclared and the current compatible pool fee remained 6 STRK.
+- Public workflow `33532857013` performed a fresh frozen/script-disabled install at exact commit `ee59b49`, passed 62 application tests plus configured release checks, and deployed Pages successfully. The unauthenticated demo returned HTTP 200 with the case-lock explanation and explicit undeployed boundary. Cairo/Foundry evidence is the separate local 40-test run recorded above.

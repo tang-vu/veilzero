@@ -2,7 +2,7 @@
 
 Status: **built and tested locally; not declared or deployed**.
 
-These values identify the deterministic reserve-custody release candidate. They are not a declaration transaction, deployed contract address, or mainnet evidence, and they must not be copied into `strk20.json` as either. The exact contract-bearing source commit is recorded after push.
+These values identify the deterministic reserve-custody release candidate at source commit `ee59b49`. They are not a declaration transaction, deployed contract address, or mainnet evidence, and they must not be copied into `strk20.json` as either.
 
 | Artifact | SHA-256 | Starknet class hash |
 | --- | --- | --- |
