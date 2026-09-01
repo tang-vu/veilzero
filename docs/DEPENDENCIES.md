@@ -14,4 +14,4 @@
 
 All JavaScript versions are exact. Lockfile integrity is mandatory.
 
-pnpm's build-script allowlist contains only `unrs-resolver`, an ESLint resolver transitive dependency that compiles/loads its platform binding. Other dependency lifecycle scripts remain denied by default.
+pnpm's local build-script allowlist contains only `unrs-resolver`, an ESLint resolver transitive dependency with prebuilt platform bindings. The GitHub Pages install disables all dependency lifecycle scripts; lint and build must still pass before deployment.
