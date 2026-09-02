@@ -4,11 +4,11 @@ import { ec } from "starknet";
 const caseInput = z.object({ report: z.string().min(20).max(16_384), programEncryptionKey: z.string().max(512).optional() });
 
 export type CasePackage = {
-  version: 2; algorithm: "AES-256-GCM" | "X25519-HKDF-SHA256+A256GCM"; caseCommitment: string; reportCommitment: string;
+  version: 3; algorithm: "AES-256-GCM" | "X25519-HKDF-SHA256+A256GCM"; caseCommitment: string; reportCommitment: string;
   ciphertextCommitment: string; ciphertext: string; payloadSize: number; iv: string; caseSecret: string; localEncryptionKey: string;
   caseSigningPrivateKey: string; caseSigningPublicKey: string; caseSigningVerificationKey: string; claimSecret: string;
-  ephemeralPublicKey: string; hkdfSalt: string; programKeyBinding: string;
-  sizeClass: "small" | "medium" | "large"; createdAt: string;
+  ephemeralPublicKey: string; hkdfSalt: string; programEncryptionKey: string; programKeyBinding: string;
+  sizeClass: "small" | "medium" | "large"; createdAt: string; recoveryAuthenticator: string;
 };
 
 export type VendorKeyPackage = {
@@ -39,7 +39,10 @@ export type PublicCaseEnvelope = Pick<
 
 const base64Value = z.string().min(1).max(32_768).regex(/^[A-Za-z0-9+/]+={0,2}$/);
 const hexValue = z.string().regex(/^[0-9a-f]+$/i);
-const feltValue = z.string().max(66).regex(/^0x[0-9a-f]+$/i).refine((value) => BigInt(value) < BigInt(ec.starkCurve.MAX_VALUE), "Value is outside the Stark field.");
+const feltValue = z.string().max(66).regex(/^0x[0-9a-f]+$/i).refine((value) => {
+  const parsed = BigInt(value);
+  return parsed > 0n && parsed < BigInt(ec.starkCurve.MAX_VALUE);
+}, "Expected a non-zero Stark field element.");
 const publicKeyValue = z.string().max(134).regex(/^0x[0-9a-f]+$/i);
 const publicEnvelopeSchema = z.object({
   version: z.literal(1),
@@ -57,7 +60,7 @@ const publicEnvelopeSchema = z.object({
   programKeyBinding: feltValue,
   sizeClass: z.enum(["small", "medium", "large"]),
   createdAt: z.iso.datetime(),
-}).superRefine((value, context) => {
+}).strict().superRefine((value, context) => {
   try {
     if (fromBase64(value.ciphertext).length !== value.payloadSize) context.addIssue({ code: "custom", path: ["payloadSize"], message: "Payload size does not match ciphertext." });
     if (fromBase64(value.ephemeralPublicKey).length !== 32) context.addIssue({ code: "custom", path: ["ephemeralPublicKey"], message: "Expected a 32-byte X25519 key." });
@@ -67,6 +70,43 @@ const publicEnvelopeSchema = z.object({
 const vendorKeySchema = z.object({
   version: z.literal(1), algorithm: z.literal("X25519"), publicKey: base64Value,
   privateKey: base64Value, createdAt: z.iso.datetime(),
+}).strict().superRefine((value, context) => {
+  try {
+    if (fromBase64(value.publicKey).length !== 32) context.addIssue({ code: "custom", path: ["publicKey"], message: "Expected a 32-byte X25519 public key." });
+  } catch { context.addIssue({ code: "custom", message: "Invalid vendor key encoding." }); }
+});
+const recoveryPackageSchema = z.object({
+  version: z.literal(3),
+  algorithm: z.enum(["AES-256-GCM", "X25519-HKDF-SHA256+A256GCM"]),
+  caseCommitment: feltValue,
+  reportCommitment: feltValue,
+  ciphertextCommitment: feltValue,
+  ciphertext: base64Value,
+  payloadSize: z.number().int().positive().max(16_400),
+  iv: hexValue.length(24),
+  caseSecret: hexValue.length(64),
+  localEncryptionKey: hexValue.length(64),
+  caseSigningPrivateKey: feltValue,
+  caseSigningPublicKey: feltValue,
+  caseSigningVerificationKey: publicKeyValue,
+  claimSecret: feltValue,
+  ephemeralPublicKey: z.union([base64Value, z.literal("")]),
+  hkdfSalt: z.union([base64Value, z.literal("")]),
+  programEncryptionKey: z.union([base64Value, z.literal("")]),
+  programKeyBinding: feltValue,
+  sizeClass: z.enum(["small", "medium", "large"]),
+  createdAt: z.iso.datetime(),
+  recoveryAuthenticator: hexValue.length(64),
+}).strict().superRefine((value, context) => {
+  try {
+    if (fromBase64(value.ciphertext).length !== value.payloadSize) context.addIssue({ code: "custom", path: ["payloadSize"], message: "Payload size does not match ciphertext." });
+    const encryptedForVendor = value.algorithm === "X25519-HKDF-SHA256+A256GCM";
+    for (const field of ["ephemeralPublicKey", "hkdfSalt", "programEncryptionKey"] as const) {
+      const encoded = value[field];
+      if (encryptedForVendor && (!encoded || fromBase64(encoded).length !== 32)) context.addIssue({ code: "custom", path: [field], message: "Expected a 32-byte X25519 value." });
+      if (!encryptedForVendor && encoded) context.addIssue({ code: "custom", path: [field], message: "Diagnostic packages must not carry X25519 material." });
+    }
+  } catch { context.addIssue({ code: "custom", message: "Invalid recovery-package encoding." }); }
 });
 
 const encoder = new TextEncoder();
@@ -74,6 +114,11 @@ function hex(bytes: ArrayBuffer | Uint8Array) { return [...new Uint8Array(bytes)
 function base64(bytes: ArrayBuffer | Uint8Array) { const view = new Uint8Array(bytes); let binary = ""; for (const byte of view) binary += String.fromCharCode(byte); return btoa(binary); }
 function fromBase64(value: string): Uint8Array<ArrayBuffer> { const binary = atob(value); const bytes = new Uint8Array(binary.length); for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index); return bytes; }
 function fromHex(value: string): Uint8Array<ArrayBuffer> { if (!/^(?:[0-9a-f]{2})+$/i.test(value)) throw new Error("Invalid hexadecimal value."); const parts = value.match(/.{2}/g)!; const bytes = new Uint8Array(parts.length); parts.forEach((part, index) => { bytes[index] = Number.parseInt(part, 16); }); return bytes; }
+async function authenticateRecoveryPackage(value: Omit<CasePackage, "recoveryAuthenticator">): Promise<string> {
+  const authenticationKey = await crypto.subtle.importKey("raw", fromHex(value.caseSecret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const material = encoder.encode(`VEILZERO_V1:RECOVERY_PACKAGE:${JSON.stringify(value)}`);
+  return hex(await crypto.subtle.sign("HMAC", authenticationKey, material));
+}
 async function digest(domain: string, ...parts: Uint8Array[]) {
   const prefix = encoder.encode(`VEILZERO_V1:${domain}:`);
   const material = new Uint8Array(prefix.length + parts.reduce((total, part) => total + 4 + part.length, 0));
@@ -122,6 +167,23 @@ export async function generateVendorKeyPackage(): Promise<VendorKeyPackage> {
   };
 }
 
+export async function verifyVendorKeyPackage(value: unknown): Promise<VendorKeyPackage> {
+  const vendorKeys = vendorKeySchema.parse(value);
+  const privateKey = await crypto.subtle.importKey("pkcs8", fromBase64(vendorKeys.privateKey), { name: "X25519" }, false, ["deriveBits"]);
+  const publicKey = await crypto.subtle.importKey("raw", fromBase64(vendorKeys.publicKey), { name: "X25519" }, false, []);
+  const challenge = await crypto.subtle.generateKey({ name: "X25519" }, true, ["deriveBits"]) as CryptoKeyPair;
+  const [fromImportedPrivate, fromImportedPublic] = await Promise.all([
+    crypto.subtle.deriveBits({ name: "X25519", public: challenge.publicKey }, privateKey, 256),
+    crypto.subtle.deriveBits({ name: "X25519", public: publicKey }, challenge.privateKey, 256),
+  ]);
+  const left = new Uint8Array(fromImportedPrivate);
+  const right = new Uint8Array(fromImportedPublic);
+  let difference = left.length ^ right.length;
+  for (let index = 0; index < left.length; index += 1) difference |= left[index] ^ right[index];
+  if (difference !== 0) throw new Error("Vendor public and private keys do not match.");
+  return vendorKeys;
+}
+
 export async function createCasePackage(rawInput: unknown): Promise<CasePackage> {
   const input = caseInput.parse(rawInput);
   const reportBytes = encoder.encode(input.report);
@@ -155,11 +217,12 @@ export async function createCasePackage(rawInput: unknown): Promise<CasePackage>
     : await digest("PROGRAM_KEY", encoder.encode(programBinding));
   const caseCommitment = await digest("CASE", caseSecret, encoder.encode(programBinding));
   const reportCommitment = await digest("REPORT", reportBytes, caseSecret);
-  return {
-    version: 2, algorithm, caseCommitment,
+  const commitmentSalt = algorithm === "X25519-HKDF-SHA256+A256GCM" ? salt : new Uint8Array();
+  const recoveryCore: Omit<CasePackage, "recoveryAuthenticator"> = {
+    version: 3, algorithm, caseCommitment,
     reportCommitment,
     ciphertextCommitment: await digest(
-      "ENVELOPE", ciphertextBytes, iv, salt, encoder.encode(ephemeralPublicKey),
+      "ENVELOPE", ciphertextBytes, iv, commitmentSalt, encoder.encode(ephemeralPublicKey),
       encoder.encode(programKeyBinding), encoder.encode(caseCommitment),
       encoder.encode(reportCommitment), encoder.encode(signingPublicKey),
     ),
@@ -171,9 +234,58 @@ export async function createCasePackage(rawInput: unknown): Promise<CasePackage>
     claimSecret: randomFelt(),
     ephemeralPublicKey,
     hkdfSalt: algorithm === "X25519-HKDF-SHA256+A256GCM" ? base64(salt) : "",
+    programEncryptionKey: input.programEncryptionKey ?? "",
     programKeyBinding,
     sizeClass: reportBytes.length <= 1024 ? "small" : reportBytes.length <= 4096 ? "medium" : "large", createdAt: new Date().toISOString(),
   };
+  return recoveryPackageSchema.parse({ ...recoveryCore, recoveryAuthenticator: await authenticateRecoveryPackage(recoveryCore) });
+}
+
+export async function verifyCasePackage(value: unknown): Promise<CasePackage> {
+  const casePackage = recoveryPackageSchema.parse(value);
+  const { recoveryAuthenticator, ...recoveryCore } = casePackage;
+  const expectedAuthenticator = await authenticateRecoveryPackage(recoveryCore);
+  let authenticatorDifference = recoveryAuthenticator.length ^ expectedAuthenticator.length;
+  for (let index = 0; index < recoveryAuthenticator.length; index += 1) {
+    authenticatorDifference |= recoveryAuthenticator.charCodeAt(index) ^ expectedAuthenticator.charCodeAt(index);
+  }
+  if (authenticatorDifference !== 0) throw new Error("Recovery package integrity check failed.");
+  const localKey = await crypto.subtle.importKey("raw", fromHex(casePackage.localEncryptionKey), { name: "AES-GCM" }, false, ["decrypt"]);
+  const plaintext = new Uint8Array(await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: fromHex(casePackage.iv), additionalData: encoder.encode("VEILZERO_V1:ENCRYPTED_REPORT") },
+    localKey,
+    fromBase64(casePackage.ciphertext),
+  ));
+  new TextDecoder("utf-8", { fatal: true }).decode(plaintext);
+
+  const programBindingSource = casePackage.programEncryptionKey || "diagnostic-local-key-only";
+  const expectedProgramKeyBinding = casePackage.programEncryptionKey
+    ? await deriveProgramEncryptionKeyCommitment(casePackage.programEncryptionKey)
+    : await digest("PROGRAM_KEY", encoder.encode(programBindingSource));
+  const expectedCaseCommitment = await digest("CASE", fromHex(casePackage.caseSecret), encoder.encode(programBindingSource));
+  const expectedReportCommitment = await digest("REPORT", plaintext, fromHex(casePackage.caseSecret));
+  const expectedCiphertextCommitment = await digest(
+    "ENVELOPE",
+    fromBase64(casePackage.ciphertext),
+    fromHex(casePackage.iv),
+    casePackage.hkdfSalt ? fromBase64(casePackage.hkdfSalt) : new Uint8Array(),
+    encoder.encode(casePackage.ephemeralPublicKey),
+    encoder.encode(casePackage.programKeyBinding),
+    encoder.encode(casePackage.caseCommitment),
+    encoder.encode(casePackage.reportCommitment),
+    encoder.encode(casePackage.caseSigningPublicKey),
+  );
+  const expectedSigningPublicKey = ec.starkCurve.getStarkKey(casePackage.caseSigningPrivateKey);
+  const expectedVerificationKey = `0x${hex(ec.starkCurve.getPublicKey(casePackage.caseSigningPrivateKey))}`;
+  if (
+    expectedProgramKeyBinding !== casePackage.programKeyBinding
+    || expectedCaseCommitment !== casePackage.caseCommitment
+    || expectedReportCommitment !== casePackage.reportCommitment
+    || expectedCiphertextCommitment !== casePackage.ciphertextCommitment
+    || BigInt(expectedSigningPublicKey) !== BigInt(casePackage.caseSigningPublicKey)
+    || expectedVerificationKey.toLowerCase() !== casePackage.caseSigningVerificationKey.toLowerCase()
+  ) throw new Error("Recovery package integrity check failed.");
+  return casePackage;
 }
 
 export function toPublicCaseEnvelope(casePackage: CasePackage): PublicCaseEnvelope {
@@ -218,13 +330,9 @@ export async function verifyPublicCaseEnvelope(value: unknown): Promise<PublicCa
   return envelope;
 }
 
-export function parseVendorKeyPackage(value: unknown): VendorKeyPackage {
-  return vendorKeySchema.parse(value);
-}
-
 export async function decryptCaseForVendor(casePackage: PublicCaseEnvelope | CasePackage, vendorKeys: VendorKeyPackage): Promise<string> {
-  const safeVendorKeys = parseVendorKeyPackage(vendorKeys);
-  const safeCase = await verifyPublicCaseEnvelope({ ...casePackage, version: 1 });
+  const safeVendorKeys = await verifyVendorKeyPackage(vendorKeys);
+  const safeCase = await verifyPublicCaseEnvelope("caseSecret" in casePackage ? toPublicCaseEnvelope(casePackage) : casePackage);
   const privateKey = await crypto.subtle.importKey("pkcs8", fromBase64(safeVendorKeys.privateKey), { name: "X25519" }, false, ["deriveBits"]);
   const ephemeralPublicKey = await crypto.subtle.importKey("raw", fromBase64(safeCase.ephemeralPublicKey), { name: "X25519" }, false, []);
   const key = await deriveEnvelopeKey(privateKey, ephemeralPublicKey, fromBase64(safeCase.hkdfSalt));

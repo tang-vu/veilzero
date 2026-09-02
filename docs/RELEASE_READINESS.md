@@ -109,3 +109,10 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - The pinned Starknet.js 10.4.0 public mainnet default, with its explicit RPC 0.10 path, returned `SN_MAIN`. At block `14235618`, `pnpm probe:pool` reconfirmed the published pool address, unchanged v2.0 class and legacy global-screening ABI, 6 STRK fee and 450-block proof-validity window.
 - `prepare:deployment` now checks artifact, pool, UDC and declaration state even when no deployer address is available. At block `14235648`, it matched both artifact hashes, found canonical UDC class `0x01b2df6d8861670d4a8ca4670433b2418d78169c2947f46dc614e69f333745c8`, and found release class `0x01c4ddb21597feb40ad7d51da6749c1b8cd6b52b84b7ffe13ae4da9619920503` undeclared.
 - The output explicitly contained `deployment: null` and `deployerAddressRequired: true`; no dummy address, fee estimate, signature or transaction was used. The dedicated wallet's public address remains necessary only to derive the exact unique UDC plan and obtain wallet estimates.
+
+## Verified local workflow resumption — 2026-09-02
+
+- Recovery package v3 carries the program public key and a domain-separated HMAC so every exported field can be checked before reuse. Import authenticates the AES-GCM ciphertext without rendering plaintext and recomputes program, case, report, ciphertext and Stark signing-key relationships.
+- Vendor-key import performs a fresh X25519 agreement to prove the imported public/private pair; public-manifest import recomputes both canonical commitments. Loaded artifacts must match each other and are retained in React memory only.
+- Local lint, strict TypeScript and 72 Vitest tests passed. Four Chromium flows passed, including private vendor-key, public-manifest and recovery downloads followed by reload, verified imports, secret non-rendering and explicit local vendor decryption.
+- This changes no Cairo source or pinned contract artifact. It does not create deployment or live Wallet API evidence and does not relax any browser-wallet signing gate.

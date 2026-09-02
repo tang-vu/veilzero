@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 test("encrypts locally without claiming chain success", async ({ page }) => {
   await page.goto("/"); await expect(page.getByText("READ-ONLY DEMO · NO WALLET")).toBeVisible();
   await expect(page.getByText("READ-ONLY MAINNET EVIDENCE")).toBeVisible();
-  await expect(page.getByText("6 STRK per pool action at block 14205166")).toBeVisible();
+  await expect(page.getByText("6 STRK per pool action at block 14235618")).toBeVisible();
   await expect(page.getByText("Contract not deployed · transactions 0/3")).toBeVisible();
   await expect(page.getByRole("button", { name: "Build non-submitting previews" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Run prepare-only validation" })).toBeDisabled();
@@ -59,4 +59,44 @@ test("verifies a signed reward request before building vendor calls", async ({ p
   await expect(preview).toContainText('"entrypoint": "approve"');
   await expect(preview).toContainText('"entrypoint": "authorize_reward"');
   await expect(preview).not.toContainText("claimSecret");
+});
+
+test("resumes a verified local workflow after reload", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Generate program key" }).click();
+
+  const vendorKeyDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download private key package" }).click();
+  const vendorKeyPath = await (await vendorKeyDownload).path();
+
+  await page.getByLabel("Reward token address").fill("0x456");
+  await page.getByRole("button", { name: "Bind public program manifest" }).click();
+  const manifestDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download public manifest" }).click();
+  const manifestPath = await (await manifestDownload).path();
+
+  const plaintext = "Critical recovery workflow report that must survive a browser reload.";
+  await page.getByLabel(/Vulnerability report/).fill(plaintext);
+  await page.getByRole("button", { name: "Encrypt and bind case" }).click();
+  const recoveryDownload = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export recovery package" }).click();
+  const recoveryPath = await (await recoveryDownload).path();
+
+  expect(vendorKeyPath).not.toBeNull();
+  expect(manifestPath).not.toBeNull();
+  expect(recoveryPath).not.toBeNull();
+  await page.reload();
+
+  await page.getByLabel(/Resume with public program manifest/).setInputFiles(manifestPath as string);
+  await expect(page.getByText("Verified commitments and loaded the public manifest", { exact: false })).toBeVisible();
+  await page.getByLabel(/Resume with researcher recovery package/).setInputFiles(recoveryPath as string);
+  await expect(page.getByText("Verified ciphertext, commitments, program binding, and signing keys", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Export signed reward request" })).toBeEnabled();
+  await expect(page.getByText(plaintext)).toHaveCount(0);
+
+  await page.getByLabel(/Resume with private vendor key package/).setInputFiles(vendorKeyPath as string);
+  await expect(page.getByText("Verified matching X25519 key pair", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Decrypt encrypted case" }).click();
+  await expect(page.getByText(plaintext)).toBeVisible();
+  await expect(page.getByText(/caseSigningPrivateKey|claimSecret|localEncryptionKey/i)).toHaveCount(0);
 });

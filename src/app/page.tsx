@@ -7,15 +7,17 @@ import {
   decryptCaseForVendor,
   generateProgramId,
   generateVendorKeyPackage,
-  parsePublicCaseEnvelope,
   toPublicCaseEnvelope,
+  verifyCasePackage,
+  verifyPublicCaseEnvelope,
+  verifyVendorKeyPackage,
   type CasePackage,
   type PublicCaseEnvelope,
   type VendorKeyPackage,
 } from "@/lib/case-crypto";
 import { createAuthorshipEvidence, verifyAuthorshipEvidence } from "@/lib/authorship-evidence";
 import { privacyBoundary } from "@/lib/privacy-boundary";
-import { createPublicProgramManifest, type PublicProgramManifest } from "@/lib/program-manifest";
+import { createPublicProgramManifest, verifyPublicProgramManifest, type PublicProgramManifest } from "@/lib/program-manifest";
 import {
   buildPrivateSelfTransferDiagnostic,
   buildShieldDiagnostic,
@@ -58,6 +60,9 @@ export default function Home() {
   const [importedEnvelope, setImportedEnvelope] = useState<PublicCaseEnvelope | null>(null);
   const [vendorBusy, setVendorBusy] = useState(false);
   const [evidenceStatus, setEvidenceStatus] = useState("No authorship proof imported.");
+  const [vendorKeyStatus, setVendorKeyStatus] = useState("No vendor key package imported.");
+  const [manifestStatus, setManifestStatus] = useState("No public program manifest imported.");
+  const [recoveryStatus, setRecoveryStatus] = useState("No recovery package imported.");
   const ready = useSyncExternalStore(() => () => undefined, () => true, () => false);
   const payloadLabel = useMemo(() => casePackage ? `${casePackage.ciphertext.length} encoded characters · ${casePackage.sizeClass}` : "Nothing has left this browser", [casePackage]);
 
@@ -120,7 +125,11 @@ export default function Home() {
 
   async function encrypt(event: FormEvent) {
     event.preventDefault(); if (busy) return; setBusy(true); setError("");
-    try { setCasePackage(await createCasePackage({ report, programEncryptionKey: programKey || undefined })); setReport(""); }
+    try {
+      setCasePackage(await createCasePackage({ report, programEncryptionKey: programKey || undefined }));
+      setRecoveryStatus("New recovery state exists only in this browser session. Export it before closing the page.");
+      setReport("");
+    }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Encryption failed safely."); }
     finally { setBusy(false); }
   }
@@ -164,6 +173,8 @@ export default function Home() {
     try {
       const generated = await generateVendorKeyPackage();
       setVendorKeys(generated); setProgramKey(generated.publicKey); setProgramManifest(null);
+      setVendorKeyStatus("New vendor key verified in memory. Download the private package before closing the page.");
+      setManifestStatus("No public program manifest imported.");
     } catch { setError("This browser does not provide the required X25519 WebCrypto support."); }
     finally { setVendorBusy(false); }
   }
@@ -185,6 +196,7 @@ export default function Home() {
         rewardTiers: rewardTiers.map((value) => BigInt(parseTokenAmount(value)).toString()) as [string, string, string],
       });
       setProgramManifest(manifest);
+      setManifestStatus("New public manifest verified in memory. Download it before closing the page.");
     } catch (cause) {
       setProgramManifest(null);
       setError(cause instanceof Error ? cause.message : "Program manifest validation failed safely.");
@@ -205,8 +217,58 @@ export default function Home() {
     setError(""); setVendorPlaintext("");
     try {
       if (file.size > 64 * 1024) throw new Error("Envelope exceeds the 64 KiB import limit.");
-      setImportedEnvelope(parsePublicCaseEnvelope(JSON.parse(await file.text())));
+      setImportedEnvelope(await verifyPublicCaseEnvelope(JSON.parse(await file.text())));
     } catch { setImportedEnvelope(null); setError("Encrypted case import failed validation."); }
+  }
+
+  async function importVendorKeys(file: File | undefined) {
+    if (!file) return;
+    setError(""); setVendorPlaintext(""); setVendorKeyStatus("Verifying vendor key package locally…");
+    try {
+      if (file.size > 8 * 1024) throw new Error("Vendor key package exceeds the 8 KiB import limit.");
+      const imported = await verifyVendorKeyPackage(JSON.parse(await file.text()));
+      if (programManifest && imported.publicKey !== programManifest.encryptionPublicKey) throw new Error("Vendor key does not match the active program manifest.");
+      if (casePackage?.algorithm === "X25519-HKDF-SHA256+A256GCM" && imported.publicKey !== casePackage.programEncryptionKey) throw new Error("Vendor key does not match the active recovery package.");
+      setVendorKeys(imported); setProgramKey(imported.publicKey);
+      setVendorKeyStatus("Verified matching X25519 key pair in browser memory only.");
+    } catch {
+      setVendorKeys(null);
+      setProgramKey(programManifest?.encryptionPublicKey ?? casePackage?.programEncryptionKey ?? "");
+      setVendorKeyStatus("Invalid or mismatched vendor key package. Nothing was loaded.");
+    }
+  }
+
+  async function importProgramManifest(file: File | undefined) {
+    if (!file) return;
+    setError(""); setManifestStatus("Verifying public program manifest locally…");
+    try {
+      if (file.size > 16 * 1024) throw new Error("Program manifest exceeds the 16 KiB import limit.");
+      const imported = await verifyPublicProgramManifest(JSON.parse(await file.text()));
+      if (vendorKeys && imported.encryptionPublicKey !== vendorKeys.publicKey) throw new Error("Program manifest does not match the active vendor key.");
+      if (casePackage && imported.encryptionKeyCommitment !== casePackage.programKeyBinding) throw new Error("Program manifest does not match the active recovery package.");
+      setProgramManifest(imported); setProgramKey(imported.encryptionPublicKey);
+      setManifestStatus("Verified commitments and loaded the public manifest in browser memory.");
+    } catch {
+      setProgramManifest(null);
+      setManifestStatus("Invalid or mismatched public program manifest. Nothing was loaded.");
+    }
+  }
+
+  async function importRecovery(file: File | undefined) {
+    if (!file) return;
+    setError(""); setVendorPlaintext(""); setRecoveryStatus("Verifying recovery package locally…");
+    try {
+      if (file.size > 64 * 1024) throw new Error("Recovery package exceeds the 64 KiB import limit.");
+      const imported = await verifyCasePackage(JSON.parse(await file.text()));
+      if (programManifest && imported.programKeyBinding !== programManifest.encryptionKeyCommitment) throw new Error("Recovery package does not match the active program manifest.");
+      if (vendorKeys && imported.algorithm === "X25519-HKDF-SHA256+A256GCM" && imported.programEncryptionKey !== vendorKeys.publicKey) throw new Error("Recovery package does not match the active vendor key.");
+      setCasePackage(imported); setImportedEnvelope(null);
+      if (imported.programEncryptionKey) setProgramKey(imported.programEncryptionKey);
+      setRecoveryStatus("Verified ciphertext, commitments, program binding, and signing keys in browser memory.");
+    } catch {
+      setCasePackage(null);
+      setRecoveryStatus("Invalid or mismatched recovery package. Nothing was loaded.");
+    }
   }
 
   async function importAuthorshipEvidence(file: File | undefined) {
@@ -239,6 +301,9 @@ export default function Home() {
             <button className="button primary" disabled={vendorBusy} onClick={() => void generateVendorKeys()}>{vendorBusy ? "Working…" : "Generate program key"}</button>
             <button className="button" disabled={!vendorKeys} onClick={() => vendorKeys && downloadJson(vendorKeys, `veilzero-vendor-key-${Date.now()}.json`)}>Download private key package</button>
           </div>
+          <label htmlFor="vendor-key-package">Resume with private vendor key package <small>local JSON, maximum 8 KiB</small></label>
+          <input id="vendor-key-package" type="file" accept="application/json,.json" onChange={(event) => void importVendorKeys(event.target.files?.[0])} />
+          <p className="mono" aria-live="polite">{vendorKeyStatus}</p>
           <p className="mono">{vendorKeys?.publicKey ?? "No program key generated."}</p>
           <label htmlFor="program-name">Program name</label>
           <input id="program-name" value={programName} maxLength={80} onChange={(event) => setProgramName(event.target.value)} />
@@ -258,6 +323,9 @@ export default function Home() {
             <button className="button" disabled={!vendorKeys || vendorBusy} onClick={() => void buildProgramManifest()}>Bind public program manifest</button>
             <button className="button" disabled={!programManifest} onClick={() => programManifest && downloadJson(programManifest, `veilzero-program-${programManifest.programId.slice(2, 14)}.json`)}>Download public manifest</button>
           </div>
+          <label htmlFor="program-manifest">Resume with public program manifest <small>local JSON, maximum 16 KiB</small></label>
+          <input id="program-manifest" type="file" accept="application/json,.json" onChange={(event) => void importProgramManifest(event.target.files?.[0])} />
+          <p className="mono" aria-live="polite">{manifestStatus}</p>
           <dl>
             <div><dt>Program ID</dt><dd className="mono">{programManifest?.programId ?? "—"}</dd></div>
             <div><dt>Encryption key commitment</dt><dd className="mono">{programManifest?.encryptionKeyCommitment ?? "—"}</dd></div>
@@ -292,6 +360,9 @@ export default function Home() {
         </div>
         <aside className="panel receiptPanel">
           <header><span>CASE RECEIPT</span><span>{casePackage ? "GENERATED" : "WAITING"}</span></header>
+          <label htmlFor="recovery-package">Resume with researcher recovery package <small>sensitive local JSON, maximum 64 KiB</small></label>
+          <input id="recovery-package" type="file" accept="application/json,.json" onChange={(event) => void importRecovery(event.target.files?.[0])} />
+          <p className="mono" aria-live="polite">{recoveryStatus}</p>
           <dl>
             <div><dt>Payload</dt><dd>{payloadLabel}</dd></div>
             <div><dt>Case commitment</dt><dd className="mono">{casePackage?.caseCommitment ?? "—"}</dd></div>
@@ -337,7 +408,7 @@ export default function Home() {
             <div><dt>Pool</dt><dd className="mono">0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a</dd></div>
             <div><dt>Observed class</dt><dd className="mono">0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d</dd></div>
             <div><dt>Helper ABI</dt><dd>Single Span&lt;OpenNoteDeposit&gt; · compatible at observation</dd></div>
-            <div><dt>Protocol fee</dt><dd>6 STRK per pool action at block 14205166</dd></div>
+            <div><dt>Protocol fee</dt><dd>6 STRK per pool action at block 14235618</dd></div>
             <div><dt>VeilZero state</dt><dd>Contract not deployed · transactions 0/3</dd></div>
           </dl>
           <p className="warning">The pool is upgradeable. Address, class, ABI, fee, and wallet estimate must be rechecked immediately before every browser signature.</p>
@@ -353,6 +424,7 @@ export default function Home() {
             {wallets.length === 0 ? <span>No compatible Starknet wallet detected.</span> : wallets.map((wallet) => <button className="button" key={wallet.name} disabled={Boolean(walletBusy)} onClick={() => void probeWallet(wallet)}>{walletBusy === wallet.name ? "Probing…" : `Probe ${wallet.name}`}</button>)}
           </div>
           <p className="mono" aria-live="polite">{walletStatus}</p>
+          {walletAccount && <dl><div><dt>Connected public account</dt><dd className="mono">{walletAccount}</dd></div></dl>}
           <h3>Fixed-value action preview</h3>
           <p>After connection, build the exact shield, private self-transfer, and unshield actions locally. This does not call the wallet again, estimate a fee, create a proof, sign, or submit.</p>
           <label htmlFor="diagnostic-token">Token address</label>

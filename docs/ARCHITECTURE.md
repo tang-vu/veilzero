@@ -1,6 +1,6 @@
 # Architecture
 
-The browser owns report plaintext, vendor X25519 private key, random case secret, case-scoped Stark signing key and recovery package. A researcher derives an envelope key from an ephemeral X25519 key and the program public key, then builds domain-separated commitments before any network operation. A separate shareable JSON envelope contains ciphertext and public verification material but no recovery secrets. Its transport is out of band. A Ready-compatible wallet is intended to prove and submit STRK20 actions. The live pool calls the pool-pinned VeilZero anonymizer. The vendor uses a public administrator account for policy and lifecycle actions.
+The browser owns report plaintext, vendor X25519 private key, random case secret, case-scoped Stark signing key and recovery package. A researcher derives an envelope key from an ephemeral X25519 key and the program public key, then builds domain-separated commitments before any network operation. A separate shareable JSON envelope contains ciphertext and public verification material but no recovery secrets. Its transport is out of band. Reload does not silently persist secrets: explicit bounded imports verify the public manifest, vendor key pair or recovery package and retain them only in browser memory. A Ready-compatible wallet is intended to prove and submit STRK20 actions. The live pool calls the pool-pinned VeilZero anonymizer. The vendor uses a public administrator account for policy and lifecycle actions.
 
 ```mermaid
 sequenceDiagram

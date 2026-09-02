@@ -22,14 +22,16 @@ Review opened 2026-09-01; unresolved findings are retained.
 | Decimal/STRK conversion or accidental open-note diagnostic | High | Fixed locally | Plain-string integer conversion rejects exponent/excess precision/zero/overflow; diagnostic transfer paths cannot use `OPEN` |
 | Oversized/empty ciphertext | Medium | Fixed | 1..16400 ciphertext-byte contract bounds (16 KiB UTF-8 plaintext plus GCM tag) and tests |
 | Ambiguous transaction retry | High | Fixed locally / live validation pending | A strict secret-free pending journal survives reload; timeouts, malformed/mismatched receipts and incomplete status remain ambiguous and block a second hash |
+| Reload loses local cryptographic workflow state | High operational | Fixed + browser tested | Explicit bounded imports restore verified manifest, recovery and vendor-key state in memory only; a download/reload/import/decrypt flow passes without browser persistence |
+| Corrupted or mismatched secret artifact is accepted | High integrity | Fixed + adversarially tested | Recovery v3 authenticates every field, verifies AEAD and recomputes bindings/commitments/signing keys; vendor import proves its X25519 pair; cross-artifact mismatches fail closed |
 | Plaintext logging/storage | High | No instance found | No logger/localStorage/backend; field cleared after encrypt |
-| Secret recovery package used as vendor transport | Critical operational | Fixed | Separate public envelope excludes case secret, local key, signing key and claim secret; schema, length and ciphertext commitment are checked before decryption; files over 64 KiB are rejected |
+| Secret recovery package used as vendor transport | Critical operational | Fixed | Separate public envelope excludes case secret, local key, signing key, claim secret and recovery authenticator; strict length/commitment checks precede decryption; files over 64 KiB are rejected |
 | Selective-proof parser accepts secret-bearing extensions | High operational | Fixed + browser tested | Strict nested schema rejects unknown fields; 32 KiB import cap; UI displays only a verdict and never imported JSON |
 | Ambiguous commitment serialization / envelope field substitution | High integrity | Fixed | SHA-256 commitment parts are length-framed and bind ciphertext, AEAD parameters, program binding, case/report commitments and case public key; substitution tests fail closed |
 | XSS/URL injection | Medium | No dynamic HTML | React text escaping; fixed external URLs |
 | Dependency vulnerability | High | Fixed | Next 16.0.8 rejected; pinned 16.3.4; `pnpm audit` reports no known vulnerabilities |
 | Mutable CI action tags / incomplete deploy gate | High supply chain | Fixed | Pages actions are pinned to resolved immutable commits; CI runs secret scan, `strk20.json` validation and dependency audit before artifact upload |
-| Cairo CI depends on mutable setup-action internals | High supply chain | Fixed | Contract CI downloads exact official Scarb/Foundry/USC release assets, verifies organizer-published SHA-256 digests, then checks formatting, 40 tests and artifact identity |
+| Cairo CI depends on mutable setup-action internals | High supply chain | Fixed | Contract CI downloads exact official Scarb/Foundry/USC release assets, verifies organizer-published SHA-256 digests, then checks formatting, all 42 tests and artifact identity |
 | Judge path requested third-party fonts | Low privacy / availability | Fixed | Removed `next/font/google`; system stacks avoid the network request, metadata exposure and offline startup delay |
 
 The project has not received an independent audit.

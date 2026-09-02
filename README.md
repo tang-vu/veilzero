@@ -18,7 +18,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Public vendor program manifest | Implemented + unit/browser tested | Binds encryption key, policy, SLAs, token and fixed tiers; contains no private key |
 | Shareable encrypted case envelope | Implemented + unit/browser tested | Public JSON excludes secrets; its ciphertext commitment is verified before decryption |
 | Domain-separated case/report commitments | Implemented + unit tested | `VEILZERO_V1` domains |
-| Recovery-package export | Implemented | Read-only browser demo |
+| Recovery-package export/import | Implemented + unit/browser tested | Strict v3 import rechecks its HMAC, AEAD, commitments, program binding and signing-key pair; secrets remain memory-only |
 | Selective authorship proof and local verifier | Implemented + unit/browser tested | Strict bounded import, case-scoped Stark signature; no recovery secrets exported |
 | Wallet discovery/capability probe | Implemented + unit tested | Chain/API/STRK20 balance capability; no write |
 | Private case submission and clarification preparation | Implemented + unit tested; live unverified | Exact 11-field action mapping, case-key signature and incomplete-proof rejection |
@@ -32,7 +32,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Pool-pinned estimation preview, marker extraction, case signature, empty-preview/proof checks and note-drift abort |
 | Reproducible contract artifact identity | Verified locally, not declared | Pinned Sierra/CASM SHA-256 and class hashes in `docs/evidence/contract-artifact.md` |
 | Deterministic deployment handoff | Read-only mainnet verified | Artifact/pool/UDC/declaration checks; unique address derived from a public deployer address |
-| Live pool diagnostics | Read-only mainnet verified | Address, class, ABI surface, version and 6 STRK observed fee pinned to block `14205166` |
+| Live pool diagnostics | Read-only mainnet verified | Address, class, ABI surface, version and 6 STRK observed fee pinned to block `14235618` |
 | Wallet API submission | Deferred pending live wallet validation | Diagnostic is explicitly read-only; no fake success path |
 | Mainnet evidence | Not started | `strk20.json` is honestly empty |
 
@@ -40,7 +40,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 
 1. Open the privacy boundary and program policy.
 2. Enter a report; observe that encryption happens locally and plaintext disappears.
-3. Export the case recovery receipt.
+3. Export the case recovery receipt; reload and import it to demonstrate verified local resumption.
 4. Export and verify the case-signed reward request; preview acknowledge, accept/reject, and authorization calls without signing.
 5. Once deployed, execute submission, follow-up and settlement through STRK20.
 6. Verify pool and VeilZero involvement from transaction receipts.
@@ -65,7 +65,7 @@ The vendor funds a bounded fixed-tier reserve. A researcher sends the encrypted 
 VeilZero is a stateful anonymizer rather than a private-transfer skin. Its contract pins the pool as the only `privacy_invoke` caller, stores project-specific state, returns one `Span<OpenNoteDeposit>`, and enforces project state before the pool can create the reward note. The official helper documentation and a block-pinned read of the live mainnet pool v2.0 agree on that legacy surface. Upstream issue #978 remains an upgrade warning: current privacy-monorepo `main` has moved to a newer return shape, so VeilZero re-probes the upgradeable pool rather than assuming compatibility.
 
 Researcher submission/clarification preparation is documented in [docs/WALLET_CASE_ADAPTER.md](docs/WALLET_CASE_ADAPTER.md), and vendor public calls in [docs/WALLET_ADMIN_ADAPTER.md](docs/WALLET_ADMIN_ADAPTER.md). The destination-bound claim preparation and its fail-closed invariants are documented in [docs/WALLET_CLAIM_ADAPTER.md](docs/WALLET_CLAIM_ADAPTER.md).
-The selective, case-signed handoff into vendor authorization is documented in [docs/REWARD_AUTHORIZATION_REQUEST.md](docs/REWARD_AUTHORIZATION_REQUEST.md).
+The selective, case-signed handoff into vendor authorization is documented in [docs/REWARD_AUTHORIZATION_REQUEST.md](docs/REWARD_AUTHORIZATION_REQUEST.md). Local artifact resumption and its secret-handling boundary are documented in [docs/RECOVERY.md](docs/RECOVERY.md).
 
 ## Mainnet addresses and verified transactions
 
@@ -117,6 +117,7 @@ cd contracts && scarb test
 ## Current limitations
 
 - X25519 envelope encryption requires modern WebCrypto support; the no-program-key path remains a conspicuously local-only diagnostic fallback.
+- Recovery and vendor-key packages are intentionally sensitive offline files. Import is bounded, strict, cryptographically checked and memory-only, but neither package is password-wrapped; loss or theft remains unrecoverable in this MVP.
 - No application prover or discovery endpoint is configured: the official dapp route assigns keys, note discovery and proving to the connected privacy wallet. The wallet's infrastructure remains a trust and availability boundary.
 - The destination-bound Wallet API claim adapter is implemented but not live-validated. It uses a non-submittable estimation preview to resolve `${openNoteIds[0]}`, signs that note, prepares the real proof, and aborts on wrong-pool output, unexpected preview proof material, note drift, or incomplete proof. The browser exposes a prepare-only harness that rechecks mainnet/account/API and discards the proof without submitting; a compatible live wallet, deployed helper, and authorized case must still run it before enabling claim submission.
 - No contract is deployed; no mainnet transaction or fee exists.
