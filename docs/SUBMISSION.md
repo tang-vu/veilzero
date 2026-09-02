@@ -2,11 +2,11 @@
 
 - Repository: https://github.com/tang-vu/veilzero (public)
 - Registration PR: https://github.com/starkience/strk20-hackathon/pull/261 (official check passed; applied to upstream `main` as `0554021`; bot closed rather than merged by design)
-- Demo: https://tang-vu.github.io/veilzero/ (deployment run `33595234361` succeeded at source commit `0515c66`; fresh frozen/script-disabled install, 69 tests, build and release checks passed; HTTP 200 with the prepare-only no-submit harness and explicit undeployed boundary)
-- Public Cairo evidence: workflow run `33595234362` passed the checksum-pinned Scarb/Foundry/USC install, contract build, all 42 Cairo tests, artifact hashes, and Sierra class hash at source commit `0515c66`.
+- Demo: https://tang-vu.github.io/veilzero/ (deployment run `33596796336` succeeded at source commit `cff492d`; fresh frozen/script-disabled install, 72 tests, static build and release checks passed; HTTP 200 with the prepare-only no-submit harness, verified local workflow importers and explicit undeployed boundary)
+- Public Cairo evidence: workflow run `33596795537` passed the checksum-pinned Scarb/Foundry/USC install, contract build, all 42 Cairo tests, artifact hashes, and Sierra class hash at source commit `cff492d`.
 - Video: pending
 - Mainnet contract: pending
 - Verified transactions: 0/3
 - Deadline: 2026-09-07 23:59 UTC
 
-The official hub reads the public repository continuously. There is no final-submit button.
+The official rules were rechecked on 2026-09-02: the scored entry still requires a live demo, a three-minute video, and at least three successful mainnet hashes in `strk20.json` that touched the STRK20 pool. The official hub reads the public repository continuously. There is no final-submit button.
