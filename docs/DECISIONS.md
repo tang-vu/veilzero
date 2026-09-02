@@ -123,3 +123,7 @@ All tracked Markdown relative links are resolved from their source file, URL-dec
 ## 2026-09-02 — Enforce researcher-signed reward authorization on-chain
 
 A vendor-selected claim commitment could make an accepted reward unclaimable even if the UI validated an off-chain artifact. The researcher now exports a strict secret-free request signed by the submitted case key over domain, program, case, and claim commitment. `authorize_reward` accepts that signature and Cairo verifies it before any reserve mutation. Tests reject commitment substitution, signer mismatch, unknown fields, and cross-program replay; tier and expiry remain explicit vendor policy choices.
+
+## 2026-09-02 — Stage live claim validation after helper deployment
+
+The earlier wording made live prepare/sign/re-prepare validation a pre-deployment gate even though Wallet API preparation must execute the VeilZero helper through the pool. The initial deployment gate therefore remains artifact/pool/UDC/declaration verification, cost review and human signatures. After deployment and case authorization—but before claim submission—the browser harness rechecks mainnet, account and Wallet API 0.10.3, requires both prepared calls to target the freshly verified pool, rejects proof material in the estimation preview, rejects note drift or incomplete output, and discards the final proof without exposing its note ID. This resolves the sequencing loop without weakening the destination-binding invariant or enabling automated submission.

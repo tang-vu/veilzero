@@ -29,7 +29,7 @@ Privacy is necessary for the report, case identity, unrelated cases, and payout 
 | Program, case, clarification and fixed-tier lifecycle | Implemented + deployed-contract tested | `contracts/src/lib.cairo` |
 | Pool-pinned `privacy_invoke` | Implemented + contract tested + live ABI probed | Single-span return matches official docs and observed mainnet pool v2.0 |
 | Case-locked reserve and open-note settlement | Implemented + deployed-contract tested, not deployed | Authorization locks funds; expiry release; one-time nullifier |
-| Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Estimation-only preview, marker extraction, case signature, proof completeness and note-drift abort |
+| Destination-bound claim preparation | Implemented + unit/contract tested; live unverified | Pool-pinned estimation preview, marker extraction, case signature, empty-preview/proof checks and note-drift abort |
 | Reproducible contract artifact identity | Verified locally, not declared | Pinned Sierra/CASM SHA-256 and class hashes in `docs/evidence/contract-artifact.md` |
 | Deterministic deployment handoff | Read-only mainnet verified | Artifact/pool/UDC/declaration checks; unique address derived from a public deployer address |
 | Live pool diagnostics | Read-only mainnet verified | Address, class, ABI surface, version and 6 STRK observed fee pinned to block `14205166` |
@@ -118,7 +118,7 @@ cd contracts && scarb test
 
 - X25519 envelope encryption requires modern WebCrypto support; the no-program-key path remains a conspicuously local-only diagnostic fallback.
 - No application prover or discovery endpoint is configured: the official dapp route assigns keys, note discovery and proving to the connected privacy wallet. The wallet's infrastructure remains a trust and availability boundary.
-- The destination-bound Wallet API claim adapter is implemented but not live-validated. It uses a non-submittable estimation preview to resolve `${openNoteIds[0]}`, signs that note, prepares the real proof, and aborts on note drift. A compatible wallet and deployed pool must verify the full behavior before enabling submission.
+- The destination-bound Wallet API claim adapter is implemented but not live-validated. It uses a non-submittable estimation preview to resolve `${openNoteIds[0]}`, signs that note, prepares the real proof, and aborts on wrong-pool output, unexpected preview proof material, note drift, or incomplete proof. The browser exposes a prepare-only harness that rechecks mainnet/account/API and discards the proof without submitting; a compatible live wallet, deployed helper, and authorized case must still run it before enabling claim submission.
 - No contract is deployed; no mainnet transaction or fee exists.
 - Ciphertext delivery is an out-of-band public-envelope file in this MVP. Availability and transport confidentiality are not provided by VeilZero.
 - Vendor lifecycle calls are public by design in the MVP.
@@ -131,9 +131,9 @@ The Cairo reserve/settlement anonymizer, signed reward-request artifact, explici
 ## Roadmap
 
 1. Re-probe the upgradeable live mainnet pool and fee immediately before each signing gate.
-2. Validate Wallet API transaction building and destination-note stability with a Ready/Xverse-compatible wallet.
-3. Run Cairo and browser adversarial suites; deploy to a supported test path.
-4. Deploy through a human wallet gate, verify three mainnet transactions, publish demo and video.
+2. Generate the address-specific deployment plan and deploy the helper through the human browser-wallet gate.
+3. Create and authorize a real case, then run the prepare-only validation harness with a compatible wallet before enabling claim submission.
+4. Verify three mainnet transactions, then publish the demo video and final evidence.
 
 ## License and attribution
 

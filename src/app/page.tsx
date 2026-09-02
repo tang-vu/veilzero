@@ -25,6 +25,7 @@ import {
 import { classifyChainId, safeWalletError } from "@/lib/wallet-diagnostics";
 import { createRewardAuthorizationRequest } from "@/lib/reward-authorization-request";
 import { VendorTransactionPreview } from "./vendor-transaction-preview";
+import { ClaimPreparationValidation } from "./claim-preparation-validation";
 
 const phases = ["Submitted", "Acknowledged", "Accepted", "Reward authorized", "Settled"] as const;
 
@@ -38,6 +39,9 @@ export default function Home() {
   const [walletStatus, setWalletStatus] = useState("Discovery starts in this browser; no account is connected.");
   const [walletBusy, setWalletBusy] = useState("");
   const [walletAccount, setWalletAccount] = useState("");
+  const [activeWallet, setActiveWallet] = useState<WalletWithStarknetFeatures | null>(null);
+  const [walletNetwork, setWalletNetwork] = useState<ReturnType<typeof classifyChainId> | null>(null);
+  const [walletApis, setWalletApis] = useState<readonly string[]>([]);
   const [diagnosticToken, setDiagnosticToken] = useState("");
   const [diagnosticAmount, setDiagnosticAmount] = useState("0.01");
   const [diagnosticPreview, setDiagnosticPreview] = useState<unknown[] | null>(null);
@@ -73,7 +77,7 @@ export default function Home() {
 
   async function probeWallet(wallet: WalletWithStarknetFeatures) {
     if (walletBusy) return;
-    setWalletBusy(wallet.name); setWalletAccount(""); setDiagnosticPreview(null); setWalletStatus("Waiting for wallet approval…");
+    setWalletBusy(wallet.name); setWalletAccount(""); setActiveWallet(null); setWalletNetwork(null); setWalletApis([]); setDiagnosticPreview(null); setWalletStatus("Waiting for wallet approval…");
     try {
       const connection = await wallet.features["standard:connect"].connect();
       if (connection.accounts.length === 0) throw { code: "NO_AUTHORIZED_ACCOUNT" };
@@ -91,6 +95,9 @@ export default function Home() {
         strk20 = "available; private balance query succeeded";
       } catch { strk20 = "not confirmed (unsupported, unregistered, or declined)"; }
       setWalletAccount(account);
+      setActiveWallet(wallet);
+      setWalletNetwork(network);
+      setWalletApis(walletApis.map(String));
       setWalletStatus(`${wallet.name}: ${network}; Wallet API ${walletApis.join(", ") || "unknown"}; RPC specs ${specs.join(", ") || "unknown"}; STRK20 ${strk20}. No transaction was submitted.`);
     } catch (error) { setWalletStatus(safeWalletError(error)); }
     finally { setWalletBusy(""); }
@@ -357,6 +364,15 @@ export default function Home() {
           {diagnosticError && <p className="error" role="alert">{diagnosticError}</p>}
           {diagnosticPreview && <pre className="actionPreview" aria-label="STRK20 diagnostic action preview">{JSON.stringify(diagnosticPreview, null, 2)}</pre>}
           <p className="warning">A preview is not a fee estimate or transaction. Re-read the pool fee, obtain a wallet estimate, apply the 100 STRK budget gate, and use a separate human signing gate before any write.</p>
+          <ClaimPreparationValidation
+            key={`${activeWallet?.name ?? "no-wallet"}:${walletAccount}:${programManifest?.programId ?? "no-program"}:${casePackage?.caseCommitment ?? "no-case"}`}
+            wallet={activeWallet}
+            account={walletAccount}
+            network={walletNetwork}
+            walletApis={walletApis}
+            program={programManifest}
+            casePackage={casePackage}
+          />
         </div>
       </section>
 

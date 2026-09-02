@@ -3,13 +3,13 @@
 ## Active
 
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
-- The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter has local drift, proof-completeness and transaction-version tests, but still requires a compatible live wallet and pool to validate marker visibility and stable note resolution before deployment can be called ready.
+- The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter and browser harness have local API/account/network, pool-target, empty-preview, marker, drift, proof-completeness and transaction-version tests. Live validation still requires a compatible wallet, deployed helper and authorized case. This blocks claim submission, not the initial helper deployment that makes the validation executable.
 - The current case-signed reward-authorization class is built and identity-pinned but needs a fresh read-only declaration/deployment plan using a current process-scoped RPC and the dedicated wallet's public address. No dummy address will be promoted to evidence.
 - A real three-minute video requires the human-signed deployed flow and remains unrecorded.
 
 ## Exact continuation
 
-After a Ready/Xverse-compatible wallet confirms the live prepare/sign/re-prepare behavior, rebuild and re-verify the unchanged release candidate:
+Before the initial human deployment gate, rebuild and re-verify the unchanged release candidate:
 
 ```powershell
 pnpm install --frozen-lockfile --ignore-scripts
@@ -37,6 +37,8 @@ pnpm prepare:deployment
 ```
 
 Do not treat the predicted address as deployed evidence. Fee estimation and both signatures remain browser-wallet human gates.
+
+After the helper is deployed and a matching program/case/reward authorization exists, use the browser diagnostic panel to run **Run prepare-only validation**. Enter only the freshly verified public pool and deployed helper addresses. The harness must report stable marker resolution and complete proof output while retaining no proof and submitting no transaction. A pass is a prerequisite for the separate claim signing gate, not transaction evidence.
 
 After human-signed qualifying transactions have final accepted receipts, place the three candidate hashes and deployed address into the local `strk20.json`, then set the evidence variables and reconcile before committing that file:
 

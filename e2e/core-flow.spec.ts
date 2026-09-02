@@ -5,6 +5,8 @@ test("encrypts locally without claiming chain success", async ({ page }) => {
   await expect(page.getByText("6 STRK per pool action at block 14205166")).toBeVisible();
   await expect(page.getByText("Contract not deployed · transactions 0/3")).toBeVisible();
   await expect(page.getByRole("button", { name: "Build non-submitting previews" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Run prepare-only validation" })).toBeDisabled();
+  await expect(page.getByText("Not run. No proof has been requested.")).toBeVisible();
   await expect(page.getByText("A preview is not a fee estimate or transaction.", { exact: false })).toBeVisible();
   await expect(page.getByText("Exact tier locked to this case")).toBeVisible();
   await page.getByRole("button", { name: "Generate program key" }).click();
@@ -15,6 +17,8 @@ test("encrypts locally without claiming chain success", async ({ page }) => {
   await expect(page.getByText("GENERATED")).toBeVisible(); await expect(page.getByText("Not submitted")).toBeVisible();
   await expect(page.getByText(plaintext)).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Export encrypted case" })).toBeEnabled();
+  await expect(page.getByText(/caseSigningPrivateKey|claimSecret/i)).toHaveCount(0);
+  await expect(page.getByText("does not expose the resolved note ID", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Decrypt encrypted case" }).click();
   await expect(page.getByText(plaintext)).toBeVisible();
   const downloadStarted = page.waitForEvent("download");

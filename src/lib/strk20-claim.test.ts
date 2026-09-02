@@ -11,6 +11,7 @@ import {
 import { claimMessageHash } from "./protocol-auth";
 
 const input = {
+  pool: "0x999",
   token: "0x10",
   recipient: "0x20",
   contract: "0x30",
@@ -31,6 +32,7 @@ describe("destination-bound STRK20 claim preparation", () => {
   it("extracts exactly one wallet-resolved note between contract markers", () => {
     expect(extractResolvedNoteId(prepared("0x777", true).call)).toBe("0x777");
     expect(() => extractResolvedNoteId({ ...prepared("0x777", true).call, calldata: [NOTE_MARKER_BEFORE, "0x1", NOTE_MARKER_AFTER, NOTE_MARKER_BEFORE, "0x2", NOTE_MARKER_AFTER] })).toThrow(/found 2/);
+    expect(() => extractResolvedNoteId({ ...prepared("0x777", true).call, calldata: [NOTE_MARKER_BEFORE, "not-a-felt", NOTE_MARKER_AFTER] })).toThrow(/found 0/);
   });
 
   it("previews, signs the resolved note, then produces a complete stable proof", async () => {
@@ -57,10 +59,24 @@ describe("destination-bound STRK20 claim preparation", () => {
       .mockResolvedValueOnce(prepared("0x777", false)))).rejects.toThrow(/incomplete/);
   });
 
+  it("rejects a wrong pool target or proof material in the estimation preview", async () => {
+    await expect(prepareDestinationBoundClaim(input, vi.fn()
+      .mockResolvedValueOnce({ ...prepared("0x777", false), call: { ...prepared("0x777", false).call, contract_address: "0x998" } })))
+      .rejects.toThrow(/different privacy pool/);
+    await expect(prepareDestinationBoundClaim(input, vi.fn()
+      .mockResolvedValueOnce(prepared("0x777", true))))
+      .rejects.toThrow(/estimation preview/);
+    await expect(prepareDestinationBoundClaim(input, vi.fn()
+      .mockResolvedValueOnce({ call: null, proof: null })))
+      .rejects.toThrow(/malformed/);
+  });
+
   it("submits only a complete prepared proof", async () => {
     const submit = vi.fn().mockResolvedValue({ transaction_hash: "0xabc" });
-    await expect(submitPreparedClaim(prepared("0x777", true), submit)).resolves.toEqual({ transaction_hash: "0xabc" });
+    const complete = { prepared: prepared("0x777", true), noteId: "0x777", pool: input.pool, actions: [] };
+    await expect(submitPreparedClaim(complete, submit)).resolves.toEqual({ transaction_hash: "0xabc" });
     expect(submit).toHaveBeenCalledWith({ calls: [prepared("0x777", true).call], proof: prepared("0x777", true).proof });
-    await expect(submitPreparedClaim(prepared("0x777", false), submit)).rejects.toThrow(/incomplete/);
+    await expect(submitPreparedClaim({ ...complete, prepared: prepared("0x777", false) }, submit)).rejects.toThrow(/incomplete/);
+    await expect(submitPreparedClaim({ ...complete, noteId: "0x778" }, submit)).rejects.toThrow(/changed before submission/);
   });
 });

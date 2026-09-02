@@ -4,7 +4,7 @@
 |---|---|
 | ESLint | Pass, zero warnings |
 | TypeScript `--noEmit` | Pass |
-| Vitest | 66 passed, 0 failed |
+| Vitest | 69 passed, 0 failed |
 | Next.js 16.3.4 production build | Pass; static `/` |
 | Playwright Chromium | 3 passed, 0 failed |
 | `pnpm audit --audit-level high` | No known vulnerabilities |
@@ -20,3 +20,5 @@
 | Current-head clean clone | Pass at `65ba82d`: frozen install, lint, typecheck, 66 unit tests, build, 3 browser flows, link/manifest/encoding/secret/audit gates, Scarb build, and artifact identities |
 
 Pinned Scarb 2.20.1 formatted and built the contract locally; Starknet Foundry has no native Windows release, so official 0.63.0 Linux artifacts ran in an isolated Docker container. Public workflow `33540591730` independently repeated those gates on Linux using checksum-pinned official tool archives. Deployment tests cover program/case collisions, configuration, program binding, pool/admin authorization, case-signed reward requests, vendor commitment substitution, cross-program replay, clarification signatures and requests, payload bounds, event shape, case reserve locking, overcommit rejection, expiry release/reauthorize, paused withdrawal limited to available reserve, note return, wrong/zero nullifiers, tier/destination substitution and duplicate settlement. Live pool behavior still requires a supported network deployment.
+
+The 69-test local suite adds prepare-only live-adapter coverage for mainnet/account/API revalidation, correct two-stage simulation/proving requests, absence of any submission call, expected-pool binding, empty estimation proof enforcement and malformed wallet responses. No compatible live wallet was available in this automated run, so the result is implementation evidence rather than live Wallet API evidence.
