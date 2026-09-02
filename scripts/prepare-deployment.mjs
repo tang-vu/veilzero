@@ -14,7 +14,6 @@ const poolAddress = process.env.STRK20_POOL_ADDRESS;
 const deployerAddress = process.env.VEILZERO_DEPLOYER_ADDRESS;
 if (!rpcUrl) throw new Error("STARKNET_RPC_URL is required and is never printed");
 if (!poolAddress) throw new Error("STRK20_POOL_ADDRESS is required");
-if (!deployerAddress) throw new Error("VEILZERO_DEPLOYER_ADDRESS is required (public address only)");
 
 async function loadJson(path) {
   try {
@@ -70,7 +69,9 @@ const fee = await rpc("starknet_call", [
   },
   blockId,
 ]);
-const plan = buildDeploymentPlan({ classHash, compiledClassHash, poolAddress, deployerAddress });
+const plan = deployerAddress
+  ? buildDeploymentPlan({ classHash, compiledClassHash, poolAddress, deployerAddress })
+  : null;
 if (declaration.error && declaration.error.code !== 28) {
   throw new Error(`Unable to determine declaration state: ${declaration.error.message}`);
 }
@@ -80,7 +81,7 @@ if (classDeclared && declaration.result.contract_class_version === undefined) {
 }
 
 console.log(JSON.stringify({
-  status: "READ_ONLY_DEPLOYMENT_PLAN",
+  status: plan ? "READ_ONLY_DEPLOYMENT_PLAN" : "READ_ONLY_DEPLOYMENT_READINESS",
   observedAt: new Date(block.result.timestamp * 1000).toISOString(),
   chainId: chain.result,
   blockNumber,
@@ -97,6 +98,9 @@ console.log(JSON.stringify({
     class_hash: classHash,
     contract_class_file: EXPECTED.sierraPath,
   },
+  deployerAddressRequired: !plan,
   deployment: plan,
-  warning: "No fee was estimated, no wallet was contacted, and no transaction was signed or submitted.",
+  warning: plan
+    ? "No fee was estimated, no wallet was contacted, and no transaction was signed or submitted."
+    : "Declaration readiness was checked without a deployer. Set VEILZERO_DEPLOYER_ADDRESS to a public browser-wallet address to derive the exact unique UDC plan; no fee was estimated and no transaction was signed or submitted.",
 }, null, 2));

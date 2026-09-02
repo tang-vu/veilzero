@@ -11,8 +11,8 @@
 | `strk20.json` structural validation | Pass; intentionally incomplete |
 | Scarb format/build | Pass |
 | Contract artifact identity | Pass; Sierra/CASM SHA-256 and class hashes match the pinned release candidate |
-| Live pool probe | Pass on mainnet v2.0 and Sepolia v2.1; both legacy-global-screening surfaces |
-| Read-only deployment plan | Generator and new artifact pins pass; last live pool/UDC/declaration run was the prior reserve-custody candidate at mainnet block `14208014`, so the new class still requires a fresh address-specific read |
+| Live pool probe | Pass; mainnet v2.0/class/ABI/6 STRK fee reconfirmed at block `14235618`; prior Sepolia v2.1 probe has the same legacy-global-screening surface |
+| Read-only deployment readiness | Pass at mainnet block `14235648`; current artifact/pool/UDC verified and current class undeclared; exact unique address still requires the public deployer |
 | Cairo pure invariant tests under Foundry | 7 passed, 0 failed |
 | Starknet Foundry deployed-contract tests | 35 passed, 0 failed; 42 total with invariants |
 | Public Cairo CI | Pass; checksum-pinned workflow run `33595234362` reproduced build, 42 tests, artifact hashes and Sierra class hash at `0515c66` |

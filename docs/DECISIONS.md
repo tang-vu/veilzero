@@ -127,3 +127,7 @@ A vendor-selected claim commitment could make an accepted reward unclaimable eve
 ## 2026-09-02 — Stage live claim validation after helper deployment
 
 The earlier wording made live prepare/sign/re-prepare validation a pre-deployment gate even though Wallet API preparation must execute the VeilZero helper through the pool. The initial deployment gate therefore remains artifact/pool/UDC/declaration verification, cost review and human signatures. After deployment and case authorization—but before claim submission—the browser harness rechecks mainnet, account and Wallet API 0.10.3, requires both prepared calls to target the freshly verified pool, rejects proof material in the estimation preview, rejects note drift or incomplete output, and discards the final proof without exposing its note ID. This resolves the sequencing loop without weakening the destination-binding invariant or enabling automated submission.
+
+## 2026-09-02 — Separate address-free readiness from the unique deployment plan
+
+Artifact identity, live pool compatibility and fee, canonical UDC identity, and class declaration state do not depend on a deployer account. `prepare:deployment` now performs and reports those reads when the public deployer address is absent, returns `deployment: null`, and makes the missing address explicit. Supplying the dedicated wallet's public address retains the prior deterministic unique UDC plan. This removes the temptation to use a dummy address as current evidence while leaving address binding, wallet estimates and all signatures at the human gate.

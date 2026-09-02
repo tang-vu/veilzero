@@ -4,7 +4,7 @@
 
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
 - The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter and browser harness have local API/account/network, pool-target, empty-preview, marker, drift, proof-completeness and transaction-version tests. Live validation still requires a compatible wallet, deployed helper and authorized case. This blocks claim submission, not the initial helper deployment that makes the validation executable.
-- The current case-signed reward-authorization class is built and identity-pinned but needs a fresh read-only declaration/deployment plan using a current process-scoped RPC and the dedicated wallet's public address. No dummy address will be promoted to evidence.
+- The current case-signed reward-authorization class is built and identity-pinned; a fresh address-free read at mainnet block `14235648` reconfirmed the pool/UDC and found the class undeclared. The exact unique UDC address and wallet fee estimates still require the dedicated wallet's public address. No dummy address is promoted to evidence.
 - A real three-minute video requires the human-signed deployed flow and remains unrecorded.
 
 ## Exact continuation
@@ -27,7 +27,7 @@ pnpm verify:strk20
 
 Immediately before any deployment/signing gate, set a current process-scoped RPC and rerun `pnpm probe:pool`; compare its address, class hash, ABI surface and fee with `docs/evidence/live-pool-probe.md`.
 
-With the dedicated wallet's public address only, generate the exact read-only declaration/deployment plan:
+The address-free readiness check can be repeated with only the first two variables. With the dedicated wallet's public address, generate the exact read-only declaration/deployment plan:
 
 ```powershell
 $env:STARKNET_RPC_URL = '<verified-mainnet-rpc>'

@@ -38,6 +38,10 @@ pnpm probe:pool
 
 The RPC URL is process-scoped and never printed. A changed class hash, unknown ABI classification, changed fee, wrong chain, or failed view is a stop condition.
 
+### Fresh re-probe — 2026-09-02
+
+At mainnet block `14235618` (`0x0503a4b7b9fc4151a3eb4c26d8dfeb44d6d9edc05761b79763431d93c12bd591`, timestamp `2026-09-02T05:39:32Z`), the same read-only probe reconfirmed pool v2.0, class `0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d`, the compatible legacy global-screening surface, 6 STRK fee and 450-block proof-validity window. The run used the public mainnet default published by the pinned Starknet.js 10.4.0 dependency with an explicit RPC 0.10 path. It signed and submitted nothing. This is fresher compatibility evidence, but the pool remains upgradeable and must still be re-probed immediately before each human signature.
+
 ## Sepolia observation
 
 The same probe at Sepolia block `14393017` (`0x3a72dc3faf88eb949b9f10910deb42ee951f4678f390b2210e029f2c51f8d07`, timestamp `2026-09-01T15:20:14Z`) identified pool v2.1, class `0x07e2bbd7ccc1e68b2695caef70aeb2a3be6cd017b5d5159278ba08f2d8de33f`, the same legacy global-screening surface, and a 2 STRK fee. No Sepolia transaction was submitted. This supports ABI compatibility but does not replace a wallet-produced proof and accepted receipt.

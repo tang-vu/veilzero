@@ -107,7 +107,7 @@ pnpm test
 pnpm build
 pnpm test:e2e
 pnpm scan:secrets
-pnpm prepare:deployment # requires current RPC, pool and public deployer address
+pnpm prepare:deployment # RPC + pool checks readiness; public deployer adds the exact UDC plan
 cd contracts && scarb build
 cd .. && pnpm verify:artifact
 # Linux/WSL with Starknet Foundry 0.63.0:
