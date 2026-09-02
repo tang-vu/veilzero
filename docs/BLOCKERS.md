@@ -2,6 +2,7 @@
 
 ## Active
 
+- The accepted upstream registry still contains the wrong Telegram contact. Official issue `starkience/strk20-hackathon#272` requests the maintainer-only in-place correction to `hanhgia2212`; do not claim it is fixed until upstream `main` changes.
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
 - The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter and browser harness have local API/account/network, pool-target, empty-preview, marker, drift, proof-completeness and transaction-version tests. Live validation still requires a compatible wallet, deployed helper and authorized case. This blocks claim submission, not the initial helper deployment that makes the validation executable.
 - The current case-signed reward-authorization class is built and identity-pinned; a fresh address-free read at mainnet block `14235648` reconfirmed the pool/UDC and found the class undeclared. The exact unique UDC address and wallet fee estimates still require the dedicated wallet's public address. No dummy address is promoted to evidence.
