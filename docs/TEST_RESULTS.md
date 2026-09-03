@@ -16,10 +16,10 @@
 | Read-only deployment readiness | Pass at mainnet block `14285506`; current artifact/pool/UDC verified and current class undeclared; exact unique address still requires the public deployer |
 | Cairo pure invariant tests under Foundry | 7 passed, 0 failed |
 | Starknet Foundry deployed-contract tests | 35 passed, 0 failed; 42 total with invariants |
-| Public Cairo CI | Pass; checksum-pinned workflow run `33596795537` reproduced build, 42 tests, artifact hashes and Sierra class hash at `cff492d` |
+| Public Cairo CI | Pass; checksum-pinned workflow run `33718705771` reproduced build, 42 tests, artifact hashes and Sierra class hash at `ddde26e` |
 | Tracked-file secret scan | Pass across 117 tracked files, including the recovery importers, live validation harness, signed request implementation, budget gate and documentation |
 | Current-head clean clone | Pass at `65ba82d`: frozen install, lint, typecheck, 66 unit tests, build, 3 browser flows, link/manifest/encoding/secret/audit gates, Scarb build, and artifact identities |
-| Current public source CI | Pass at `cff492d`: frozen/script-disabled install, lint, typecheck, 72 unit tests, build, release gates, 42 Cairo tests, artifact identity and Pages deployment |
+| Current public source CI | Pass at `ddde26e`: frozen/script-disabled install, lint, typecheck, 77 unit tests, build, budget/release gates, 42 Cairo tests, artifact identity and Pages deployment |
 
 Pinned Scarb 2.20.1 formatted and built the contract locally; Starknet Foundry has no native Windows release, so official 0.63.0 Linux artifacts ran in an isolated Docker container. Public workflow `33540591730` independently repeated those gates on Linux using checksum-pinned official tool archives. Deployment tests cover program/case collisions, configuration, program binding, pool/admin authorization, case-signed reward requests, vendor commitment substitution, cross-program replay, clarification signatures and requests, payload bounds, event shape, case reserve locking, overcommit rejection, expiry release/reauthorize, paused withdrawal limited to available reserve, note return, wrong/zero nullifiers, tier/destination substitution and duplicate settlement. Live pool behavior still requires a supported network deployment.
 
