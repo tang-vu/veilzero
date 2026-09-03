@@ -14,7 +14,7 @@ This live claim check cannot precede initial helper deployment because both prep
 
 Ambiguous receipt means stop. Never retry until transaction lookup and case/nullifier state prove the first attempt absent or failed.
 
-The cost ceiling is enforced from `mainnet-budget.json`. Record every fresh wallet estimate, including zero only when the wallet explicitly reports sponsorship, retain a bounded evidence source, and run `pnpm gate:budget`. It must report `READY` with actual plus projected cost strictly below 100 STRK. The ordinary `pnpm verify:budget` command intentionally passes while estimates are missing so CI can preserve an honest incomplete ledger; it is not authorization to sign.
+The cost ceiling is enforced from `mainnet-budget.json`. Its item allocations keep maximum exposure strictly below 100 STRK even when later dependency-bound calls cannot yet be estimated. Record the current action's fresh wallet estimate, including zero only when the wallet explicitly reports sponsorship, retain a bounded evidence source, and run `pnpm gate:budget -- <item-id>`. That exact item must be explicit and within its allocation before signing; pending later items do not authorize their own signatures. The ordinary `pnpm verify:budget` command validates the complete envelope but is not authorization to sign.
 
 The release-candidate build identity is recorded in `docs/evidence/contract-artifact.md` and checked with `pnpm verify:artifact`. A matching class hash proves only artifact identity. It does not prove declaration, deployment, pool compatibility, or transaction execution. Before any declaration, rebuild from the exact release commit and rerun the verifier; any source or dependency change requires recording new hashes.
 

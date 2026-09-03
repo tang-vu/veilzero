@@ -409,7 +409,7 @@ export default function Home() {
             <div><dt>Observed class</dt><dd className="mono">0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d</dd></div>
             <div><dt>Helper ABI</dt><dd>Single Span&lt;OpenNoteDeposit&gt; · compatible at observation</dd></div>
             <div><dt>Protocol fee</dt><dd>6 STRK per pool action at block 14285500</dd></div>
-            <div><dt>Budget gate</dt><dd>Not ready · 18 STRK known · 12 wallet estimates missing</dd></div>
+            <div><dt>Budget gate</dt><dd>Per-action · 18 STRK known · 86 STRK maximum exposure · 12 estimates pending</dd></div>
             <div><dt>VeilZero state</dt><dd>Contract not deployed · transactions 0/3</dd></div>
           </dl>
           <p className="warning">The pool is upgradeable. Address, class, ABI, fee, and wallet estimate must be rechecked immediately before every browser signature.</p>

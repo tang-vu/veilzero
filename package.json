@@ -20,7 +20,7 @@
     "verify:evidence": "node scripts/verify-mainnet-evidence.mjs",
     "verify:artifact": "node scripts/verify-contract-artifact.mjs",
     "verify:budget": "node scripts/verify-mainnet-budget.mjs",
-    "gate:budget": "node scripts/verify-mainnet-budget.mjs --require-ready",
+    "gate:budget": "node scripts/verify-mainnet-budget.mjs --require-item",
     "probe:pool": "node scripts/probe-strk20-pool.mjs",
     "prepare:deployment": "node scripts/prepare-deployment.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",

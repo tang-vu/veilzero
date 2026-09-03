@@ -139,3 +139,7 @@ Reload-safe transaction metadata did not restore the researcher or vendor crypto
 ## 2026-09-03 — Make every mainnet cost explicit before signing
 
 The 100 STRK ceiling is now represented by a strict machine-readable ledger rather than prose alone. Its fixed inventory covers account activation, declaration, deployment, program creation, reserve exposure, funding, vendor lifecycle calls, three private-action network fees and three pool protocol fees. Plain decimal parsing avoids floating point, omitted or duplicate items fail, accepted actuals require transaction hashes, and the ceiling cannot be raised in data. CI accepts an honestly incomplete ledger, while the separate signing gate rejects any missing wallet estimate or total that is not strictly below 100 STRK.
+
+## 2026-09-03 — Gate the current action without deadlocking later estimates
+
+Requiring every estimate before the first signature deadlocks calls that can only be simulated after deployment or case creation. Each inventory item now has an explicit maximum allocation; all allocations total 86 STRK, including a 25 STRK reserve cap and the observed pool fees, leaving 14 STRK unallocated. The ordinary verifier enforces the whole maximum-exposure envelope. A signing gate names one item and requires its fresh estimate within its cap, while later dependency-bound items remain explicitly pending until they become estimable.

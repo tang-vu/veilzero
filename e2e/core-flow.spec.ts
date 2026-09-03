@@ -3,7 +3,7 @@ test("encrypts locally without claiming chain success", async ({ page }) => {
   await page.goto("/"); await expect(page.getByText("READ-ONLY DEMO · NO WALLET")).toBeVisible();
   await expect(page.getByText("READ-ONLY MAINNET EVIDENCE")).toBeVisible();
   await expect(page.getByText("6 STRK per pool action at block 14285500")).toBeVisible();
-  await expect(page.getByText("Not ready · 18 STRK known · 12 wallet estimates missing")).toBeVisible();
+  await expect(page.getByText("Per-action · 18 STRK known · 86 STRK maximum exposure · 12 estimates pending")).toBeVisible();
   await expect(page.getByText("Contract not deployed · transactions 0/3")).toBeVisible();
   await expect(page.getByRole("button", { name: "Build non-submitting previews" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Run prepare-only validation" })).toBeDisabled();

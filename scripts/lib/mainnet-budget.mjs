@@ -40,7 +40,7 @@ export function formatStrkUnits(value) {
   return fraction ? `${whole}.${fraction}` : whole.toString();
 }
 
-export function verifyMainnetBudget(raw, { requireReady = false } = {}) {
+export function verifyMainnetBudget(raw, { requireReady = false, requireItem = null } = {}) {
   exactKeys(raw, ["version", "ceilingStrk", "items"], "Budget");
   if (raw.version !== 1) throw new Error("Budget version must be 1");
   const ceiling = parseStrkUnits(raw.ceilingStrk, "ceilingStrk");
@@ -50,35 +50,50 @@ export function verifyMainnetBudget(raw, { requireReady = false } = {}) {
   }
 
   const ids = new Set();
+  const itemStates = new Map();
   const missingEstimates = [];
   let actual = 0n;
   let projected = 0n;
+  let maximumExposure = 0n;
+  let limitTotal = 0n;
   for (const [index, item] of raw.items.entries()) {
-    exactKeys(item, ["id", "state", "amountStrk", "transactionHash", "source"], `items[${index}]`);
+    exactKeys(item, ["id", "state", "amountStrk", "limitStrk", "transactionHash", "source"], `items[${index}]`);
     if (!EXPECTED_ID_SET.has(item.id)) throw new Error(`Unknown budget item: ${item.id}`);
     if (ids.has(item.id)) throw new Error(`Duplicate budget item: ${item.id}`);
     ids.add(item.id);
+    itemStates.set(item.id, item.state);
     if (typeof item.source !== "string" || item.source.length < 8 || item.source.length > 256) throw new Error(`${item.id} requires a bounded evidence source`);
+    const limit = parseStrkUnits(item.limitStrk, `${item.id}.limitStrk`);
+    limitTotal += limit;
 
     if (item.state === "awaiting-wallet-estimate") {
       if (item.amountStrk !== null || item.transactionHash !== null) throw new Error(`${item.id} must remain empty while awaiting an estimate`);
       missingEstimates.push(item.id);
+      maximumExposure += limit;
       continue;
     }
     if (item.state !== "projected" && item.state !== "actual") throw new Error(`${item.id} has an invalid state`);
     const amount = parseStrkUnits(item.amountStrk, `${item.id}.amountStrk`);
+    if (amount > limit) throw new Error(`${item.id} exceeds its ${formatStrkUnits(limit)} STRK item limit`);
     if (item.state === "projected") {
       if (item.transactionHash !== null) throw new Error(`${item.id} cannot attach a transaction hash to a projection`);
       projected += amount;
+      maximumExposure += limit;
     } else {
       if (typeof item.transactionHash !== "string" || !TRANSACTION_HASH.test(item.transactionHash)) throw new Error(`${item.id} actual cost requires a transaction hash`);
       actual += amount;
+      maximumExposure += amount;
     }
   }
   for (const id of EXPECTED_IDS) if (!ids.has(id)) throw new Error(`Missing budget item: ${id}`);
 
   const total = actual + projected;
   if (total >= ceiling) throw new Error(`Budget ceiling breached: ${formatStrkUnits(total)} STRK is not below 100 STRK`);
+  if (maximumExposure >= ceiling) throw new Error(`Maximum budget exposure breached: ${formatStrkUnits(maximumExposure)} STRK is not below 100 STRK`);
+  if (requireItem !== null) {
+    if (!EXPECTED_ID_SET.has(requireItem)) throw new Error(`Unknown required budget item: ${requireItem}`);
+    if (itemStates.get(requireItem) === "awaiting-wallet-estimate") throw new Error(`${requireItem} still requires a current wallet estimate`);
+  }
   if (requireReady && missingEstimates.length) throw new Error(`Budget gate incomplete; missing estimates: ${missingEstimates.join(", ")}`);
   return {
     ready: missingEstimates.length === 0,
@@ -86,6 +101,9 @@ export function verifyMainnetBudget(raw, { requireReady = false } = {}) {
     projectedStrk: formatStrkUnits(projected),
     totalStrk: formatStrkUnits(total),
     remainingStrk: formatStrkUnits(ceiling - total),
+    limitTotalStrk: formatStrkUnits(limitTotal),
+    maximumExposureStrk: formatStrkUnits(maximumExposure),
+    maximumHeadroomStrk: formatStrkUnits(ceiling - maximumExposure),
     missingEstimates,
   };
 }

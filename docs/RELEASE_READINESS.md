@@ -125,3 +125,8 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - Unit tests cover decimal precision, honest incompleteness, readiness, immutable ceiling, exact inventory, duplicate/unknown data, ceiling breach and public-hash requirements for actual costs. Pages CI now validates the ledger on every source push.
 - Source commit `ddde26e4210d5fb30c564aa39b574eb08fa003f8` was pushed to public `main`. Checksum-pinned Cairo workflow `33718705771` passed all 42 tests and artifact identity. Pages workflow `33718705688` passed its frozen/script-disabled install, 77 tests, static build, budget and release gates, then deployed successfully.
 - The unauthenticated public demo returned HTTP 200 and contained both fresh block `14285500` and the explicit 12-estimate budget blocker. GitHub emitted only non-failing notices for pinned actions whose Node.js 20 declarations are being forced onto Node.js 24.
+
+## Per-action budget gates — 2026-09-03
+
+- Review found that requiring all 12 future estimates before declaration would deadlock actions whose estimates need an already-deployed helper or case. Fixed per-item allocations now keep maximum exposure at 86 STRK while allowing later estimates to remain honestly pending.
+- The action-specific gate accepts only a named inventory item with an explicit current estimate at or below its allocation. Tests cover missing/unknown action IDs, item-limit breaches and aggregate maximum-exposure breaches.

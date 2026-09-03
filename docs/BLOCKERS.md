@@ -6,7 +6,7 @@
 - Human browser-wallet signatures are required for every Sepolia/mainnet declaration, deployment, funding and qualifying transaction.
 - The implemented Wallet API 0.10.3 estimation-preview/sign/re-prepare adapter and browser harness have local API/account/network, pool-target, empty-preview, marker, drift, proof-completeness and transaction-version tests. Live validation still requires a compatible wallet, deployed helper and authorized case. This blocks claim submission, not the initial helper deployment that makes the validation executable.
 - The current case-signed reward-authorization class is built and identity-pinned; a fresh address-free read at mainnet block `14285506` reconfirmed the pool/UDC and found the class undeclared. The exact unique UDC address and wallet fee estimates still require the dedicated wallet's public address. No dummy address is promoted to evidence.
-- The machine budget inventory currently has 18 STRK of known pool fees and 12 explicit `awaiting-wallet-estimate` entries. `pnpm verify:budget` passes the honest incomplete ledger, while `pnpm gate:budget` blocks every signing gate until all costs are explicit and the total remains below 100 STRK.
+- The machine budget inventory currently has 18 STRK of known pool fees and 12 explicit `awaiting-wallet-estimate` entries. Item allocations cap maximum exposure at 86 STRK. Each `pnpm gate:budget -- <item-id>` remains blocked until that action has a fresh wallet estimate within its allocation; later dependency-bound estimates may remain pending.
 - A real three-minute video requires the human-signed deployed flow and remains unrecorded.
 
 ## Exact continuation
