@@ -130,3 +130,5 @@ The repository is reproducible for its implemented read-only app and Cairo build
 
 - Review found that requiring all 12 future estimates before declaration would deadlock actions whose estimates need an already-deployed helper or case. Fixed per-item allocations now keep maximum exposure at 86 STRK while allowing later estimates to remain honestly pending.
 - The action-specific gate accepts only a named inventory item with an explicit current estimate at or below its allocation. Tests cover missing/unknown action IDs, item-limit breaches and aggregate maximum-exposure breaches.
+- Source commit `74327ae1d54c1b27a6aa3ff532c5ffb76e3c7667` passed checksum-pinned Cairo workflow `33719265431` with all 42 tests and artifact identity. Pages workflow `33719265324` passed 79 unit tests, the budget/release gates and deployment.
+- The public demo returned HTTP 200 with block `14285500`, 86 STRK maximum exposure and 12 explicitly pending estimates present.
