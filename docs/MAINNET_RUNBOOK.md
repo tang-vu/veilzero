@@ -2,7 +2,7 @@
 
 No agent signs or submits a mainnet write. Before each browser-wallet action: verify chain ID, pool address and ABI from current official sources; read the live pool fee; estimate network fee; update the cost ledger; ensure cumulative actual+projected cost is below 100 STRK; simulate; present the human gate; reconcile the receipt before another action.
 
-Current read-only candidate: pool `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a`, observed class `0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d` and fee 6 STRK at block `14235618`. These are observations, not permanent configuration. Run `pnpm probe:pool` against a current mainnet RPC before every gate and stop on any mismatch or unknown surface.
+Current read-only candidate: pool `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a`, observed class `0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d` and fee 6 STRK at block `14285500`. These are observations, not permanent configuration. Run `pnpm probe:pool` against a current mainnet RPC before every gate and stop on any mismatch or unknown surface.
 
 Qualification sequence: private case submission through pool→VeilZero, private case clarification through pool→VeilZero, and reward claim through pool→VeilZero returning an open note. Shield/funding/administrator calls are supporting evidence only.
 
@@ -13,6 +13,8 @@ Claim gate: after the helper is deployed and the program, case and reward author
 This live claim check cannot precede initial helper deployment because both preparations execute the helper through the pool. Initial declaration/deployment is gated instead by artifact identity, current pool/UDC/declaration reads, wallet fee estimates, the 100 STRK budget, and human signatures. Passing the later prepare-only check is mandatory before claim submission, not proof that the initial deployment happened.
 
 Ambiguous receipt means stop. Never retry until transaction lookup and case/nullifier state prove the first attempt absent or failed.
+
+The cost ceiling is enforced from `mainnet-budget.json`. Record every fresh wallet estimate, including zero only when the wallet explicitly reports sponsorship, retain a bounded evidence source, and run `pnpm gate:budget`. It must report `READY` with actual plus projected cost strictly below 100 STRK. The ordinary `pnpm verify:budget` command intentionally passes while estimates are missing so CI can preserve an honest incomplete ledger; it is not authorization to sign.
 
 The release-candidate build identity is recorded in `docs/evidence/contract-artifact.md` and checked with `pnpm verify:artifact`. A matching class hash proves only artifact identity. It does not prove declaration, deployment, pool compatibility, or transaction execution. Before any declaration, rebuild from the exact release commit and rerun the verifier; any source or dependency change requires recording new hashes.
 

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "ceilingStrk": "100",
+  "items": [
+    { "id": "deployer-account-activation-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Dedicated browser wallet must report whether account activation is sponsored, bundled, or charged." },
+    { "id": "declare-class-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet declaration estimate required." },
+    { "id": "deploy-contract-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet unique UDC deployment estimate required." },
+    { "id": "create-program-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet create_program estimate required." },
+    { "id": "program-reserve-principal-strk-equivalent", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Choose the reward token and record the STRK amount or conservative STRK-equivalent reserve exposure." },
+    { "id": "fund-program-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet exact approval and deposit estimate required." },
+    { "id": "submit-case-protocol-fee", "state": "projected", "amountStrk": "6", "transactionHash": null, "source": "Read-only mainnet pool observation at block 14285500 on 2026-09-03." },
+    { "id": "submit-case-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Privacy wallet estimate required immediately before case submission." },
+    { "id": "acknowledge-case-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet acknowledge_case estimate required." },
+    { "id": "accept-case-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet accept_case estimate required." },
+    { "id": "authorize-reward-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Browser-wallet authorize_reward estimate required." },
+    { "id": "clarify-case-protocol-fee", "state": "projected", "amountStrk": "6", "transactionHash": null, "source": "Read-only mainnet pool observation at block 14285500 on 2026-09-03." },
+    { "id": "clarify-case-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Privacy wallet estimate required immediately before clarification." },
+    { "id": "claim-reward-protocol-fee", "state": "projected", "amountStrk": "6", "transactionHash": null, "source": "Read-only mainnet pool observation at block 14285500 on 2026-09-03." },
+    { "id": "claim-reward-network", "state": "awaiting-wallet-estimate", "amountStrk": null, "transactionHash": null, "source": "Privacy wallet estimate required after prepare-only validation and immediately before claim." }
+  ]
+}

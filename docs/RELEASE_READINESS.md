@@ -117,3 +117,9 @@ The repository is reproducible for its implemented read-only app and Cairo build
 - Local lint, strict TypeScript and 72 Vitest tests passed. Four Chromium flows passed, including private vendor-key, public-manifest and recovery downloads followed by reload, verified imports, secret non-rendering and explicit local vendor decryption.
 - This changes no Cairo source or pinned contract artifact. It does not create deployment or live Wallet API evidence and does not relax any browser-wallet signing gate.
 - Source commit `cff492d6bed7d5afcf12787a3460a9f3ac9b6cd6` was pushed to public `main`. Checksum-pinned Cairo workflow `33596795537` passed all 42 tests and artifact identity. Pages workflow `33596796336` passed its frozen/script-disabled install, 72 tests, static build and release gates, then deployed successfully. The unauthenticated demo returned HTTP 200 with all three importer labels, the refreshed pool block, and no mojibake signature.
+
+## Machine-enforced mainnet budget and daily readiness — 2026-09-03
+
+- Mainnet block `14285500` reconfirmed the pool v2.0 class, compatible ABI, 6 STRK fee and 450-block proof-validity window. Address-free readiness at block `14285506` reproduced artifact/pool/UDC identity and found the VeilZero class undeclared without fabricating a deployer.
+- `mainnet-budget.json` enumerates every required cost category. Its ordinary verifier reports 18 STRK known, 82 STRK ceiling headroom and 12 missing estimates; the strict signing gate fails until those estimates are supplied.
+- Unit tests cover decimal precision, honest incompleteness, readiness, immutable ceiling, exact inventory, duplicate/unknown data, ceiling breach and public-hash requirements for actual costs. Pages CI now validates the ledger on every source push.

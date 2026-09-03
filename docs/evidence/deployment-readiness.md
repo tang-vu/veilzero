@@ -20,6 +20,8 @@ The current case-signed reward-authorization class hash is `0x01c4ddb21597feb40a
 
 On 2026-09-02, an address-free readiness run at mainnet block `14235648` (`0x038d40ac072e0e2df1efb4cf7543fa12c329360c77346d36c68e5870361ff7e8`, timestamp `2026-09-02T05:40:21Z`) reconfirmed the compatible pool and 6 STRK fee, read canonical UDC class `0x01b2df6d8861670d4a8ca4670433b2418d78169c2947f46dc614e69f333745c8`, and found the current VeilZero class **undeclared**. No dummy deployer was used and `deployment` was explicitly `null`. This clears current artifact/pool/UDC/declaration discovery; it is not an address-specific plan or authorization.
 
+On 2026-09-03, the address-free readiness check repeated at mainnet block `14285506` (`0x06312707dfc168092a14c1af386e449bd7a9312e4cecaef2dd93e1ecff712a66`, timestamp `2026-09-03T05:14:18Z`). It reproduced the pinned artifact hashes, compatible pool/class and 6 STRK fee, canonical UDC class, and undeclared VeilZero class. Output again contained `deployerAddressRequired: true` and `deployment: null`; no address, estimate, signature or transaction was fabricated.
+
 To repeat readiness without an account, omit `VEILZERO_DEPLOYER_ADDRESS`. The output status is `READ_ONLY_DEPLOYMENT_READINESS`, includes `deployerAddressRequired: true`, and contains no predicted deployment address.
 
 ## Generate an address-specific plan
